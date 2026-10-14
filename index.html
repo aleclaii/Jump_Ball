@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Can't decide? Two options play a quick game of basketball, MMA, soccer, or football, and the winner is your answer.">
+  <title>Jump Ball</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+  <meta name="theme-color" content="#FFFFFF">
+</head>
+<body>
+<main class="wrap">
+  <header class="topbar">
+    <h1 class="wordmark"><button type="button" class="home-btn" id="home-btn" aria-label="Jump Ball: go to the Quick screen">Jump Ball</button></h1>
+    <p class="tag">Settle any decision with a game.</p>
+  </header>
+
+  <!-- SETUP -->
+  <div id="screen-setup" class="stack">
+    <div class="tabs" role="tablist" aria-label="Game type">
+      <button type="button" role="tab" data-tab="quick"><span class="tab-name">Quick</span><span class="tab-sub">Just pick</span></button>
+      <button type="button" role="tab" data-tab="creative"><span class="tab-name">Creative</span><span class="tab-sub">Set the odds</span></button>
+      <button type="button" role="tab" data-tab="competition"><span class="tab-name">Competition</span><span class="tab-sub">Build players</span></button>
+      <button type="button" role="tab" data-tab="strategy"><span class="tab-name">Strategy</span><span class="tab-sub">Chess · 4X · Trading</span></button>
+    </div>
+
+    <!-- Quick and Creative -->
+    <section class="panel matchup-card" id="creative-panel" aria-labelledby="creative-title">
+      <div class="card-meta"><span class="card-cat">What are you deciding between?</span></div>
+      <h2 class="card-title" id="creative-title"></h2>
+      <div class="card-rows">
+        <div class="side" data-side="home">
+          <div class="side-row">
+            <div class="tok-slot"></div>
+            <div class="side-main">
+              <label class="sr" for="pick-home">Option 1</label>
+              <input class="name-in" id="pick-home" maxlength="24" autocomplete="off" placeholder="Type an option">
+              <div class="odds-bar" aria-hidden="true"><span></span></div>
+            </div>
+            <span class="chance"><b></b><small>win chance</small></span>
+          </div>
+          <p class="side-error" aria-live="polite"></p>
+          <div class="rating">
+            <div class="rating-top"><span class="ovr">Rating <b class="ovr-n"></b></span><span class="tier"></span></div>
+            <label class="sr" for="ovr-home">Option 1 rating</label>
+            <input type="range" id="ovr-home" min="40" max="99" step="1">
+            <div class="ppg"></div>
+          </div>
+          <div class="players strategy-player" hidden></div>
+        </div>
+        <div class="side" data-side="away">
+          <div class="side-row">
+            <div class="tok-slot"></div>
+            <div class="side-main">
+              <label class="sr" for="pick-away">Option 2</label>
+              <input class="name-in" id="pick-away" maxlength="24" autocomplete="off" placeholder="Type an option">
+              <div class="odds-bar" aria-hidden="true"><span></span></div>
+            </div>
+            <span class="chance"><b></b><small>win chance</small></span>
+          </div>
+          <p class="side-error" aria-live="polite"></p>
+          <div class="rating">
+            <div class="rating-top"><span class="ovr">Rating <b class="ovr-n"></b></span><span class="tier"></span></div>
+            <label class="sr" for="ovr-away">Option 2 rating</label>
+            <input type="range" id="ovr-away" min="40" max="99" step="1">
+            <div class="ppg"></div>
+          </div>
+          <div class="players strategy-player" hidden></div>
+        </div>
+      </div>
+      <div class="field" id="field-strategy">
+        <div class="field-label" id="lbl-strategy">Played by</div>
+        <div class="seg" id="seg-strategy" role="group" aria-labelledby="lbl-strategy">
+          <button type="button" data-v="options">The options<small>Set ratings below</small></button>
+          <button type="button" data-v="players">Your players<small>Uses their stats</small></button>
+        </div>
+      </div>
+      <div class="field" id="field-mode">
+        <div class="field-label" id="lbl-mode">Odds</div>
+        <div class="seg" id="seg-mode" role="group" aria-labelledby="lbl-mode">
+          <button type="button" data-v="fair">Fair<small>50 / 50</small></button>
+          <button type="button" data-v="weighted">Weighted<small>Give one an edge</small></button>
+        </div>
+        <p class="hint" id="mode-hint"></p>
+      </div>
+      <div class="card-foot"><span class="rivalry" id="creative-rivalry"></span><span class="odds-note"></span></div>
+    </section>
+
+    <!-- Competition -->
+    <section class="panel matchup-card" id="comp-panel" aria-labelledby="comp-title">
+      <div class="card-meta"><span class="card-cat">Who's playing, and for what?</span></div>
+      <h2 class="card-title" id="comp-title"></h2>
+      <div class="card-rows">
+        <div class="side" id="comp-home"></div>
+        <div class="side" id="comp-away"></div>
+      </div>
+      <div class="field">
+        <div class="field-label" id="lbl-format">Format</div>
+        <div class="seg" id="seg-format" role="group" aria-labelledby="lbl-format">
+          <button type="button" data-v="1v1">1 v 1<small>One player each</small></button>
+          <button type="button" data-v="2v2">2 v 2<small>Adds passing</small></button>
+        </div>
+      </div>
+      <p class="hint">Players and their stats for every sport are set up under <b>Your players</b> below.</p>
+      <div class="card-foot"><span class="rivalry" id="comp-rivalry"></span><span class="odds-note"></span></div>
+    </section>
+
+    <section class="panel" id="opts-panel" aria-labelledby="opts-h">
+      <h2 class="section-title" id="opts-h">How should they settle it?</h2>
+      <div class="field" id="field-game">
+        <div class="field-label" id="lbl-game">Game</div>
+        <div class="seg" id="seg-game" role="group" aria-labelledby="lbl-game"></div>
+      </div>
+      <div class="field" id="field-sport">
+        <div class="field-label" id="lbl-sport">Sport</div>
+        <div class="seg seg-many" id="seg-sport" role="group" aria-labelledby="lbl-sport"></div>
+      </div>
+      <div class="field">
+        <div class="field-label" id="lbl-length">Game length</div>
+        <div class="seg" id="seg-length" role="group" aria-labelledby="lbl-length">
+          <button type="button" data-v="quick">Quick<small>Short version</small></button>
+          <button type="button" data-v="full">Full<small>Whole game</small></button>
+        </div>
+        <p class="hint" id="length-hint"></p>
+      </div>
+      <div class="field">
+        <div class="field-label" id="lbl-series">Series</div>
+        <div class="seg" id="seg-series" role="group" aria-labelledby="lbl-series">
+          <button type="button" data-v="1">One game<small>Winner takes it</small></button>
+          <button type="button" data-v="3">Best of 3<small>First to 2 wins</small></button>
+        </div>
+      </div>
+      <div class="field" id="field-period">
+        <div class="field-label" id="lbl-period">Seconds per quarter or round</div>
+        <div class="seg" id="seg-period" role="group" aria-labelledby="lbl-period">
+          <button type="button" data-v="30">30</button>
+          <button type="button" data-v="45">45</button>
+          <button type="button" data-v="60">60</button>
+        </div>
+      </div>
+    </section>
+
+    <button type="button" class="cta" id="tipoff">Play it out<small id="tipoff-sub"></small></button>
+
+    <section class="howto" id="howto" aria-labelledby="howto-h">
+      <h2 class="howto-title" id="howto-h">How it works</h2>
+      <ol>
+        <li><span class="n">1</span>Type the two things you're choosing between</li>
+        <li><span class="n">2</span>Watch them play a quick game of a random sport</li>
+        <li><span class="n">3</span>The winner is your answer</li>
+      </ol>
+      <p class="hint">Want to pick the sport, set the odds, play a best of 3, or build your own players? Try <b>Creative</b> or <b>Competition</b> at the top.</p>
+    </section>
+
+    <!-- Players (Competition) -->
+    <section class="panel" id="people-panel" aria-label="Your players">
+      <div class="panel-head">
+        <h2>Your players</h2>
+        <button type="button" class="ghost" id="add-person-btn">+ New player</button>
+      </div>
+      <p class="hint">Every player gets the same points in each sport. Pick a build, then fine-tune.</p>
+      <ul class="roster" id="people"></ul>
+      <form class="editor" id="person-editor" hidden novalidate>
+        <h3 id="person-editor-title">New player</h3>
+        <div class="editor-grid">
+          <div class="tok-slot" id="pe-token"></div>
+          <label class="lbl" for="pe-name">Name
+            <input type="text" class="text-in" id="pe-name" maxlength="20" placeholder="e.g. John" autocomplete="off">
+          </label>
+        </div>
+        <div class="row">
+          <label class="lbl" for="pe-color">Color
+            <input type="color" id="pe-color" class="color-in">
+          </label>
+          <div class="lbl">Photo (optional)
+            <div class="row">
+              <span class="file-btn ghost">Upload image<input type="file" id="pe-logo" accept="image/*" aria-label="Upload player photo"></span>
+              <button type="button" class="ghost" id="pe-logo-clear" hidden>Remove</button>
+            </div>
+          </div>
+        </div>
+        <div class="sheet">
+          <div class="field">
+            <div class="field-label" id="pe-sports-label">Stats for each sport</div>
+            <div class="seg sheet-tabs" id="pe-sports" role="tablist" aria-labelledby="pe-sports-label"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Start from a build</div>
+            <div class="archetypes" id="pe-archetypes"></div>
+          </div>
+          <div class="budget" aria-live="polite">
+            <span><span class="field-label" id="pe-budget-label">Points left</span><br><span class="hint" id="pe-budget-hint"></span></span>
+            <span class="budget-num" id="pe-left"></span>
+          </div>
+          <div id="pe-stats" class="stat-list"></div>
+          <div class="stat-group" id="pe-style" hidden>
+            <h4>Trading style · free, outside the budget</h4>
+            <div class="stat-row lean-row">
+              <label class="stat-text" for="pe-lean">
+                <span class="stat-name">Bull or bear <em id="pe-lean-label">Neutral</em></span>
+                <span class="stat-desc">Bulls hold more stock and do well when markets rise. Bears hold bonds and shorts and do well in crashes. Discipline decides how much evidence overrides the lean.</span>
+              </label>
+              <div class="lean-scale"><span>Bear</span><input type="range" id="pe-lean" min="-100" max="100" step="10" aria-describedby="pe-lean-label"><span>Bull</span></div>
+            </div>
+            <label class="stat-row check-row" for="pe-contrarian">
+              <span class="stat-text">
+                <span class="stat-name">Contrarian</span>
+                <span class="stat-desc">Bets against the crowd's mood: buys when others panic, sells when they're euphoric. Otherwise they ride the trend.</span>
+              </span>
+              <input type="checkbox" id="pe-contrarian">
+            </label>
+          </div>
+          <details class="interactions">
+            <summary>How these stats interact</summary>
+            <ul id="pe-vs"></ul>
+          </details>
+        </div>
+        <p class="error" id="pe-error" role="alert"></p>
+        <div class="row">
+          <button type="submit" class="primary">Save player</button>
+          <button type="button" class="ghost" id="pe-cancel">Cancel</button>
+          <button type="button" class="ghost danger" id="pe-delete" hidden>Delete</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Saved options -->
+    <details class="panel" id="choices-panel">
+      <summary><h2 id="choices-title">Saved options</h2></summary>
+      <p class="hint">Options you've typed are saved here. Add a logo or color to any of them.</p>
+      <ul class="roster" id="roster"></ul>
+      <button type="button" class="ghost" id="add-option-btn">+ New option</button>
+      <form class="editor" id="option-editor" hidden novalidate>
+        <h3 id="option-editor-title">New option</h3>
+        <div class="editor-grid">
+          <div class="tok-slot" id="oe-token"></div>
+          <label class="lbl" for="oe-name">Name
+            <input type="text" class="text-in" id="oe-name" maxlength="24" placeholder="e.g. Papa John's" autocomplete="off">
+          </label>
+        </div>
+        <div class="row">
+          <label class="lbl" for="oe-color">Color
+            <input type="color" id="oe-color" class="color-in">
+          </label>
+          <div class="lbl">Logo (optional)
+            <div class="row">
+              <span class="file-btn ghost">Upload image<input type="file" id="oe-logo" accept="image/*" aria-label="Upload logo image"></span>
+              <button type="button" class="ghost" id="oe-logo-clear" hidden>Remove</button>
+            </div>
+          </div>
+        </div>
+        <p class="error" id="oe-error" role="alert"></p>
+        <div class="row">
+          <button type="submit" class="primary">Save</button>
+          <button type="button" class="ghost" id="oe-cancel">Cancel</button>
+          <button type="button" class="ghost danger" id="oe-delete" hidden>Delete</button>
+        </div>
+      </form>
+    </details>
+
+    <p class="note">Players, options, and rivalry records save in this browser only.</p>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="stack" hidden>
+    <p class="sport-tag"><span class="live">Live</span><span class="sport-name" id="sport-name"></span><span class="sport-hint" id="sport-hint"></span></p>
+    <div class="board" aria-label="Scoreboard">
+      <div class="bteam" id="b-home"><span class="tok-slot"></span><span class="bname"></span><span class="bplayers"></span><span class="bscore">0</span><span class="bnote"></span><span class="bhealth" hidden><span></span></span></div>
+      <div class="bclock"><span class="bseries" id="b-series"></span><span class="bperiod" id="b-period"></span><span class="bclock-time" id="b-clock"></span></div>
+      <div class="bteam away" id="b-away"><span class="tok-slot"></span><span class="bname"></span><span class="bplayers"></span><span class="bscore">0</span><span class="bnote"></span><span class="bhealth" hidden><span></span></span></div>
+    </div>
+    <div class="court-wrap" id="field-wrap"><canvas id="field" aria-label="Animated playing field"></canvas></div>
+    <div class="controls">
+      <div class="seg" id="seg-speed" role="group" aria-label="Playback speed">
+        <button type="button" data-v="1">1×</button>
+        <button type="button" data-v="2">2×</button>
+        <button type="button" data-v="4">4×</button>
+      </div>
+      <button type="button" class="ghost" id="skip-btn">Skip to result</button>
+      <button type="button" class="ghost" id="quit-btn">Quit</button>
+    </div>
+    <ol class="feed" id="feed" aria-label="Play-by-play" aria-live="polite"></ol>
+  </div>
+
+  <!-- WINNER -->
+  <div id="screen-winner" class="stack" hidden>
+    <section class="panel matchup-card final-card" id="winner-hero" aria-live="polite">
+      <div class="card-meta"><span class="final-tag">Final</span><span class="card-cat" id="winner-sport"></span></div>
+      <div class="answer">
+        <span class="answer-label">Your answer</span>
+        <span class="answer-name" id="winner-name"></span>
+      </div>
+      <div class="card-rows" id="winner-rows"></div>
+      <p class="winner-how" id="winner-how"></p>
+      <p class="winner-record" id="winner-record"></p>
+    </section>
+    <div class="btns">
+      <button type="button" class="primary" id="again-btn">Play again</button>
+      <button type="button" class="ghost" id="new-btn">Change matchup</button>
+    </div>
+    <section class="panel" aria-labelledby="recap-h">
+      <h2 id="recap-h">Recap</h2>
+      <ul class="game-list" id="game-list"></ul>
+    </section>
+  </div>
+</main>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

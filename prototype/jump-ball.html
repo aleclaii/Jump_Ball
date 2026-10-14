@@ -1,0 +1,2384 @@
+<title>Jump Ball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Saira+Extra+Condensed:wght@600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #EDF0F3;
+    --surface: #FFFFFF;
+    --surface-2: #F4F6F8;
+    --ink: #121823;
+    --muted: #586374;
+    --line: #D6DCE3;
+    --accent: #E35F18;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #FDEBDD;
+    --focus: #1F6FEB;
+    --bad: #C2341D;
+    --good: #1E7F4F;
+    --board: #0B0F16;
+    --board-line: #232C3B;
+    --board-ink: #E9EEF5;
+    --board-muted: #9AA6B8;
+    --led: #FFB327;
+    --display: "Saira Extra Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1117;
+      --surface: #161C25;
+      --surface-2: #1D2531;
+      --ink: #E8EDF4;
+      --muted: #97A3B5;
+      --line: #2A3443;
+      --accent: #FF7A33;
+      --accent-ink: #1A0D05;
+      --accent-soft: #3A2216;
+      --focus: #6CA8FF;
+      --bad: #FF8470;
+      --good: #5FD39A;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1117;
+    --surface: #161C25;
+    --surface-2: #1D2531;
+    --ink: #E8EDF4;
+    --muted: #97A3B5;
+    --line: #2A3443;
+    --accent: #FF7A33;
+    --accent-ink: #1A0D05;
+    --accent-soft: #3A2216;
+    --focus: #6CA8FF;
+    --bad: #FF8470;
+    --good: #5FD39A;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  .wrap {
+    max-width: 560px;
+    margin-inline: auto;
+    padding-inline: 16px;
+    padding-block: 20px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  button, select, input { font: inherit; }
+  button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Masthead */
+  .mast { display: flex; flex-direction: column; gap: 2px; }
+  .wordmark {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 48px;
+    line-height: .9;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+  }
+  .wordmark span { color: var(--accent); }
+  .tag { margin: 0; color: var(--muted); font-size: 15px; }
+
+  /* How it works */
+  .howto {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+  }
+  .howto ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .howto li { display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 600; line-height: 1.25; }
+  .howto .n {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-ink);
+    font-family: var(--display); font-weight: 800; font-size: 17px;
+  }
+  .howto-title { font-size: 18px; }
+
+  /* Tabs */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .tabs button {
+    min-height: 56px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .tab-name { font-family: var(--display); font-weight: 800; font-size: 19px; letter-spacing: .06em; text-transform: uppercase; line-height: 1; }
+  .tab-sub { font-size: 13px; font-weight: 600; line-height: 1.2; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  h2 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+  .step { display: flex; align-items: center; gap: 10px; text-wrap: balance; }
+  .step .n {
+    flex: none;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--ink); color: var(--bg);
+    font-size: 18px;
+  }
+
+  /* Tokens */
+  .token {
+    --ts: 48px;
+    width: var(--ts);
+    height: var(--ts);
+    flex: none;
+    border-radius: 50%;
+    background: var(--tc);
+    display: inline-grid;
+    place-items: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .4), 0 1px 2px rgba(0, 0, 0, .2);
+  }
+  .token img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .token span {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: calc(var(--ts) * .44);
+    color: #FFFFFF;
+    letter-spacing: .02em;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, .45);
+    line-height: 1;
+  }
+
+  /* Matchup */
+  .matchup {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 10px;
+  }
+  .side { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+  .vs {
+    padding-top: 22px;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--muted);
+  }
+  .text-in, .side select, .pl-row select {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .side .text-in { text-align: center; border-width: 2px; border-color: var(--tc, var(--line)); }
+  .who {
+    align-self: stretch;
+    margin-top: 2px;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pl-row { display: flex; align-items: center; gap: 6px; width: 100%; }
+  .build { align-self: stretch; display: flex; flex-direction: column; gap: 4px; }
+  .build-name { font-size: 13px; font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .rating { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+  .rating-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .ovr { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .06em; }
+  .ovr b {
+    font-family: var(--display);
+    font-size: 24px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+  .tier {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .rating input[type="range"] { width: 100%; accent-color: var(--tc, var(--accent)); min-height: 28px; }
+  .ppg { font-size: 13px; color: var(--muted); text-align: center; }
+  .side-error { margin: 0; font-size: 13px; color: var(--bad); text-align: center; }
+  .side-error:empty { display: none; }
+  .rivalry {
+    margin: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .rivalry b { color: var(--ink); }
+
+  /* Options */
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field-label {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .seg button {
+    min-height: 44px;
+    padding: 6px 6px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.15;
+    cursor: pointer;
+  }
+  .seg button small { display: block; font-size: 12px; font-weight: 500; opacity: .75; }
+  .seg button:hover { background: var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .hint { margin: 0; font-size: 14px; color: var(--muted); }
+
+  .proj { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .proj-labels {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+  }
+  .proj-labels span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .proj-bar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--surface-2); gap: 2px; }
+  .proj-bar span { display: block; transition: flex-basis .45s ease; }
+
+  .cta {
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 12px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .18);
+  }
+  .cta small {
+    margin-top: 4px;
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: .9;
+    text-align: center;
+  }
+  .cta:active { transform: translateY(1px); }
+  .cta:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  /* Lists and editors */
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .roster li { display: flex; align-items: center; gap: 12px; padding-block: 10px; border-top: 1px solid var(--line); }
+  .roster li:first-child { border-top: 0; }
+  .rmain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .rname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rsub { font-size: 13px; color: var(--muted); }
+  .rovr { font-family: var(--display); font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ghost {
+    min-height: 40px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .ghost:hover { border-color: var(--muted); }
+  .ghost.danger { color: var(--bad); }
+  .primary {
+    min-height: 44px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  details.panel > summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  details.panel > summary::-webkit-details-marker { display: none; }
+  details.panel > summary::after { content: "Show"; font-size: 14px; font-weight: 600; color: var(--muted); }
+  details.panel[open] > summary::after { content: "Hide"; }
+  details.panel:not([open]) { gap: 0; }
+  .editor { display: flex; flex-direction: column; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .editor h3 { margin: 0; font-size: 17px; }
+  .editor-grid { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
+  .lbl { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .color-in { width: 52px; height: 40px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); cursor: pointer; }
+  .file-btn { position: relative; display: inline-flex; align-items: center; }
+  .file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .error { margin: 0; font-size: 14px; color: var(--bad); }
+  .error:empty { display: none; }
+  .note { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+
+  .archetypes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .archetypes button {
+    min-height: 52px;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.15;
+  }
+  .archetypes button b { font-size: 14px; }
+  .archetypes button small { font-size: 11px; color: var(--muted); }
+  .archetypes button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+  .budget {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+  }
+  .budget-num { font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .budget-num.done { color: var(--good); }
+  .stat-group { display: flex; flex-direction: column; gap: 12px; }
+  .stat-group h4 {
+    margin: 4px 0 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .stat-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; }
+  .stat-name { font-weight: 700; }
+  .stat-name em { font-style: normal; font-weight: 600; font-size: 12px; color: var(--muted); margin-left: 4px; }
+  .stat-desc { font-size: 13px; color: var(--ink); }
+  .stat-vs { font-size: 12px; color: var(--muted); }
+  .stepper { display: flex; align-items: center; gap: 6px; grid-row: 1 / 4; grid-column: 2; }
+  .stepper button {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .stepper button:disabled { opacity: .35; cursor: not-allowed; }
+  .stepper output { width: 2.2ch; text-align: center; font-family: var(--display); font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; }
+  .pips { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; height: 6px; margin-top: 4px; }
+  .pips i { background: var(--line); border-radius: 2px; }
+  .pips i.on { background: var(--accent); }
+
+  /* Game */
+  .board {
+    background: var(--board);
+    color: var(--board-ink);
+    border-radius: 14px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    box-shadow: inset 0 0 0 1px var(--board-line);
+  }
+  .bteam {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: center;
+    min-width: 0;
+  }
+  .bteam .tok-slot { grid-row: 1 / 4; }
+  .bname, .bplayers { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bname {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--board-muted);
+  }
+  .bplayers { font-size: 12px; color: var(--board-muted); }
+  .bplayers:empty { display: none; }
+  .bteam.has-ball .bname { color: var(--board-ink); }
+  .bteam.has-ball .bname::before { content: "\25CF\00A0"; color: var(--led); }
+  .bscore {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 42px;
+    line-height: .95;
+    color: var(--led);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 14px rgba(255, 179, 39, .35);
+  }
+  .bteam.away { grid-template-columns: minmax(0, 1fr) auto; text-align: right; }
+  .bteam.away .tok-slot { grid-column: 2; }
+  .bteam.away .bname, .bteam.away .bplayers, .bteam.away .bscore { grid-column: 1; }
+  .bteam.away.has-ball .bname::before { content: none; }
+  .bteam.away.has-ball .bname::after { content: "\00A0\25CF"; color: var(--led); }
+  .bclock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-inline: 10px;
+    border-inline: 1px solid var(--board-line);
+  }
+  .bperiod, .bseries { font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .12em; color: var(--board-muted); white-space: nowrap; }
+  .bseries { color: var(--board-ink); }
+  .bseries:empty { display: none; }
+  .bclock-time {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--led);
+    font-variant-numeric: tabular-nums;
+  }
+  .game-hint { margin: -6px 0 0; font-size: 14px; color: var(--muted); text-align: center; }
+  .court-wrap {
+    border-radius: 14px;
+    overflow: hidden;
+    aspect-ratio: 50 / 47;
+    max-width: 100%;
+    background: #D9A469;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .court-wrap canvas { display: block; width: 100%; height: 100%; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch; }
+  .controls .seg { flex: 1 1 150px; }
+  .controls .ghost { flex: 1 1 auto; }
+
+  .feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .feed li {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: baseline;
+    padding-block: 9px;
+    border-top: 1px solid var(--line);
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .feed li:first-child { border-top: 0; color: var(--ink); font-weight: 600; font-size: 17px; }
+  .feed .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tc, var(--line)); align-self: center; }
+  .feed .ftime { font-family: var(--display); font-size: 13px; letter-spacing: .06em; color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  .result { gap: 14px; }
+  .eyebrow { font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+  .winner { display: flex; align-items: center; gap: 14px; }
+  .pick-label { font-size: 14px; color: var(--muted); }
+  .pick-name {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: .95;
+    text-transform: uppercase;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .final-line { margin: 0; }
+  .box-scroll { overflow-x: auto; }
+  .box { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 15px; }
+  .box caption { text-align: left; font-family: var(--display); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-size: 13px; padding-bottom: 4px; }
+  .box th, .box td { padding: 6px 6px; text-align: center; border-bottom: 1px solid var(--line); }
+  .box th { font-family: var(--display); font-weight: 700; letter-spacing: .08em; color: var(--muted); font-size: 13px; }
+  .box th:first-child, .box td:first-child { text-align: left; }
+  .box td:first-child { max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .box td.total { font-weight: 800; }
+  .box .tdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--tc); margin-right: 6px; vertical-align: middle; }
+  .contest-list { margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+  .contest-list b { color: var(--ink); }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  @media (max-width: 380px) {
+    .howto ol { grid-template-columns: 1fr; }
+    .howto li { flex-direction: row; align-items: center; gap: 8px; }
+    .archetypes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .proj-bar span { transition: none; }
+  }
+</style>
+
+<main class="wrap">
+  <header class="mast">
+    <h1 class="wordmark">Jump<span>&nbsp;Ball</span></h1>
+    <p class="tag">Can't decide? Let them play basketball for it.</p>
+  </header>
+
+  <!-- SETUP -->
+  <div id="screen-setup" class="stack">
+    <div class="tabs" role="tablist" aria-label="Game type">
+      <button type="button" role="tab" data-tab="quick"><span class="tab-name">Quick</span><span class="tab-sub">Just pick</span></button>
+      <button type="button" role="tab" data-tab="creative"><span class="tab-name">Creative</span><span class="tab-sub">Set the odds</span></button>
+      <button type="button" role="tab" data-tab="competition"><span class="tab-name">Competition</span><span class="tab-sub">Build players</span></button>
+    </div>
+
+    <datalist id="choice-list"></datalist>
+
+    <!-- Creative -->
+    <section class="panel" id="creative-panel" aria-labelledby="creative-h">
+      <h2 class="step" id="creative-h"><span class="n" id="creative-step">1</span>What are you deciding between?</h2>
+      <div class="matchup">
+        <div class="side" data-side="home">
+          <div class="tok-slot"></div>
+          <label class="who" for="pick-home">Option 1</label>
+          <input class="text-in" id="pick-home" list="choice-list" maxlength="24" autocomplete="off" placeholder="Type an option">
+          <p class="side-error" aria-live="polite"></p>
+          <div class="rating">
+            <div class="rating-top"><span class="ovr">RATING <b class="ovr-n"></b></span><span class="tier"></span></div>
+            <label class="sr" for="ovr-home">Option 1 rating</label>
+            <input type="range" id="ovr-home" min="40" max="99" step="1">
+            <div class="ppg"></div>
+          </div>
+        </div>
+        <div class="vs" aria-hidden="true">VS</div>
+        <div class="side" data-side="away">
+          <div class="tok-slot"></div>
+          <label class="who" for="pick-away">Option 2</label>
+          <input class="text-in" id="pick-away" list="choice-list" maxlength="24" autocomplete="off" placeholder="Type an option">
+          <p class="side-error" aria-live="polite"></p>
+          <div class="rating">
+            <div class="rating-top"><span class="ovr">RATING <b class="ovr-n"></b></span><span class="tier"></span></div>
+            <label class="sr" for="ovr-away">Option 2 rating</label>
+            <input type="range" id="ovr-away" min="40" max="99" step="1">
+            <div class="ppg"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field" id="field-mode">
+        <div class="field-label" id="lbl-mode">Odds</div>
+        <div class="seg" id="seg-mode" role="group" aria-labelledby="lbl-mode">
+          <button type="button" data-v="fair">Fair<small>50 / 50</small></button>
+          <button type="button" data-v="weighted">Weighted<small>Give one an edge</small></button>
+        </div>
+        <p class="hint" id="mode-hint"></p>
+      </div>
+      <p class="rivalry" id="creative-rivalry"></p>
+    </section>
+
+    <!-- Competition -->
+    <section class="panel" id="comp-panel" aria-labelledby="comp-h">
+      <h2 class="step" id="comp-h"><span class="n">1</span>Who's playing, and for what?</h2>
+      <div class="field">
+        <div class="field-label" id="lbl-format">Format</div>
+        <div class="seg" id="seg-format" role="group" aria-labelledby="lbl-format">
+          <button type="button" data-v="1v1">1 v 1<small>One player each</small></button>
+          <button type="button" data-v="2v2">2 v 2<small>Adds passing</small></button>
+        </div>
+      </div>
+      <div class="matchup">
+        <div class="side" id="comp-home"></div>
+        <div class="vs" aria-hidden="true">VS</div>
+        <div class="side" id="comp-away"></div>
+      </div>
+      <p class="hint">Players and their stats are set up under <b>Your players</b> below.</p>
+      <p class="rivalry" id="comp-rivalry"></p>
+    </section>
+
+    <section class="panel" id="opts-panel" aria-labelledby="opts-h">
+      <h2 class="step" id="opts-h"><span class="n">2</span>How long should it take?</h2>
+      <div class="field">
+        <div class="field-label" id="lbl-length">Game length</div>
+        <div class="seg" id="seg-length" role="group" aria-labelledby="lbl-length">
+          <button type="button" data-v="quick">Quick<small>1 quarter</small></button>
+          <button type="button" data-v="full">Full game<small>4 quarters</small></button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label" id="lbl-series">Series</div>
+        <div class="seg" id="seg-series" role="group" aria-labelledby="lbl-series">
+          <button type="button" data-v="1">One game<small>Winner takes it</small></button>
+          <button type="button" data-v="3">Best of 3<small>First to 2 wins</small></button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label" id="lbl-qtr">Seconds per quarter</div>
+        <div class="seg" id="seg-qtr" role="group" aria-labelledby="lbl-qtr">
+          <button type="button" data-v="30">30</button>
+          <button type="button" data-v="45">45</button>
+          <button type="button" data-v="60">60</button>
+        </div>
+      </div>
+      <div class="proj" aria-live="polite">
+        <div class="field-label">Who's favored?</div>
+        <div class="proj-labels"><span id="proj-hl"></span><span id="proj-al"></span></div>
+        <div class="proj-bar" aria-hidden="true"><span id="proj-h"></span><span id="proj-a"></span></div>
+        <p class="hint" id="proj-text"></p>
+      </div>
+    </section>
+
+    <button type="button" class="cta" id="tipoff">Tip off<small id="tipoff-sub"></small></button>
+
+    <section class="howto" id="howto" aria-labelledby="howto-h">
+      <h2 class="howto-title" id="howto-h">How it works</h2>
+      <ol>
+        <li><span class="n">1</span>Type the two things you're choosing between</li>
+        <li><span class="n">2</span>Watch them play a quick basketball game</li>
+        <li><span class="n">3</span>The winner is your answer</li>
+      </ol>
+      <p class="hint">Want to set the odds, play a best of 3, or build your own players? Try <b>Creative</b> or <b>Competition</b> at the top.</p>
+    </section>
+
+    <!-- Players (Competition) -->
+    <section class="panel" id="people-panel" aria-label="Your players">
+      <div class="panel-head">
+        <h2>Your players</h2>
+        <button type="button" class="ghost" id="add-person-btn">+ New player</button>
+      </div>
+      <p class="hint">Everyone gets the same 50 stat points. Pick a build to start, then adjust.</p>
+      <ul class="roster" id="people"></ul>
+      <form class="editor" id="person-editor" hidden novalidate>
+        <h3 id="person-editor-title">New player</h3>
+        <div class="editor-grid">
+          <div class="tok-slot" id="pe-token"></div>
+          <label class="lbl" for="pe-name">Name
+            <input type="text" class="text-in" id="pe-name" maxlength="20" placeholder="e.g. John" autocomplete="off">
+          </label>
+        </div>
+        <div class="row">
+          <label class="lbl" for="pe-color">Color
+            <input type="color" id="pe-color" class="color-in">
+          </label>
+          <div class="lbl">Photo (optional)
+            <div class="row">
+              <span class="file-btn ghost">Upload image<input type="file" id="pe-logo" accept="image/*" aria-label="Upload player photo"></span>
+              <button type="button" class="ghost" id="pe-logo-clear" hidden>Remove</button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Start from a build</div>
+          <div class="archetypes" id="pe-archetypes"></div>
+        </div>
+        <div class="budget" aria-live="polite">
+          <span><span class="field-label">Points left</span><br><span class="hint" id="pe-budget-hint"></span></span>
+          <span class="budget-num" id="pe-left"></span>
+        </div>
+        <div id="pe-stats" class="stack"></div>
+        <p class="error" id="pe-error" role="alert"></p>
+        <div class="row">
+          <button type="submit" class="primary">Save player</button>
+          <button type="button" class="ghost" id="pe-cancel">Cancel</button>
+          <button type="button" class="ghost danger" id="pe-delete" hidden>Delete</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Saved options (both tabs) -->
+    <details class="panel" id="choices-panel">
+      <summary><h2 id="choices-title">Saved options</h2></summary>
+      <p class="hint">Options you've typed are saved here. Add a logo or color to any of them.</p>
+      <ul class="roster" id="roster"></ul>
+      <button type="button" class="ghost" id="add-btn">+ New option</button>
+      <form class="editor" id="editor" hidden novalidate>
+        <h3 id="editor-title">New option</h3>
+        <div class="editor-grid">
+          <div class="tok-slot" id="editor-token"></div>
+          <label class="lbl" for="ed-name">Name
+            <input type="text" class="text-in" id="ed-name" maxlength="24" placeholder="e.g. Papa John's" autocomplete="off">
+          </label>
+        </div>
+        <div class="row">
+          <label class="lbl" for="ed-color">Color
+            <input type="color" id="ed-color" class="color-in">
+          </label>
+          <div class="lbl">Logo (optional)
+            <div class="row">
+              <span class="file-btn ghost">Upload image<input type="file" id="ed-logo" accept="image/*" aria-label="Upload logo image"></span>
+              <button type="button" class="ghost" id="ed-logo-clear" hidden>Remove</button>
+            </div>
+          </div>
+        </div>
+        <p class="error" id="ed-error" role="alert"></p>
+        <div class="row">
+          <button type="submit" class="primary">Save</button>
+          <button type="button" class="ghost" id="ed-cancel">Cancel</button>
+          <button type="button" class="ghost danger" id="ed-delete" hidden>Delete</button>
+        </div>
+      </form>
+    </details>
+
+    <p class="note">Prototype. Players, options, and rivalry records save in this browser only.</p>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="stack" hidden>
+    <div class="board" aria-label="Scoreboard">
+      <div class="bteam" id="b-home"><span class="tok-slot"></span><span class="bname"></span><span class="bplayers"></span><span class="bscore">0</span></div>
+      <div class="bclock"><span class="bseries" id="b-series"></span><span class="bperiod" id="b-period">Q1</span><span class="bclock-time" id="b-clock">12:00</span></div>
+      <div class="bteam away" id="b-away"><span class="tok-slot"></span><span class="bname"></span><span class="bplayers"></span><span class="bscore">0</span></div>
+    </div>
+    <p class="game-hint" id="game-hint"></p>
+    <div class="court-wrap"><canvas id="court" aria-label="Animated basketball court"></canvas></div>
+    <div class="controls" id="controls">
+      <div class="seg" id="seg-speed" role="group" aria-label="Playback speed">
+        <button type="button" data-v="1">1×</button>
+        <button type="button" data-v="2">2×</button>
+        <button type="button" data-v="4">4×</button>
+      </div>
+      <button type="button" class="ghost" id="skip-btn">Skip to result</button>
+      <button type="button" class="ghost" id="quit-btn">Quit</button>
+    </div>
+    <section class="panel result" id="result" hidden aria-live="polite"></section>
+    <ol class="feed" id="feed" aria-label="Play-by-play" aria-live="polite"></ol>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const chance = (p) => Math.random() < p;
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const lerpP = (a, b, k) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) });
+  const ease = (k) => (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  /* ---------- Storage ---------- */
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; }
+    },
+  };
+
+  /* ---------- Stats ----------
+     Each stat owns exactly one moment of a possession, so no two stats do the same job,
+     and together they cover the whole trip down the floor. */
+  const STAT_GROUPS = [
+    { name: "Scoring", stats: [
+      { key: "fin", name: "Finishing", abbr: "FIN", desc: "Layups and dunks go in more often.", vs: "Countered by Interior Defense." },
+      { key: "mid", name: "Mid-Range", abbr: "MID", desc: "Pull-ups and fadeaways go in more often.", vs: "Countered by Perimeter Defense." },
+      { key: "thr", name: "Three-Point", abbr: "3PT", desc: "Threes go in more often, and you take more of them.", vs: "Countered by Perimeter Defense." },
+      { key: "ft", name: "Free Throws", abbr: "FT", desc: "Makes more free throws after getting fouled at the rim.", vs: "Nobody can guard a free throw." },
+    ] },
+    { name: "Ball control", stats: [
+      { key: "han", name: "Ball Handling", abbr: "HDL", desc: "Fewer steals against you, and you shake defenders for open shots.", vs: "Countered by Perimeter Defense." },
+      { key: "pas", name: "Passing", abbr: "PAS", tag: "2v2 only", desc: "Pass more often, and your passes set up wide-open shots.", vs: "Countered by Perimeter Defense (interceptions)." },
+    ] },
+    { name: "Defense", stats: [
+      { key: "per", name: "Perimeter Defense", abbr: "PER", desc: "Steals the ball, and contests jumpers and threes.", vs: "Beats Ball Handling, Passing, Mid-Range, Three-Point." },
+      { key: "int", name: "Interior Defense", abbr: "INT", desc: "Blocks shots, and contests at the rim.", vs: "Beats Finishing." },
+    ] },
+    { name: "Hustle", stats: [
+      { key: "reb", name: "Rebounding", abbr: "REB", desc: "Grabs missed shots on both ends.", vs: "Countered by the other side's Rebounding." },
+      { key: "sta", name: "Stamina", abbr: "STA", desc: "Every other stat fades less late in long games.", vs: "Matters most in Full games and Best of 3." },
+    ] },
+  ];
+  const STATS = STAT_GROUPS.flatMap((g) => g.stats);
+  const BUDGET = 50, STAT_MIN = 1, STAT_MAX = 10;
+  const statTotal = (stats) => STATS.reduce((sum, s) => sum + (stats[s.key] || 0), 0);
+  const evenStats = (v) => Object.fromEntries(STATS.map((s) => [s.key, v]));
+  // Creative mode: one rating becomes an even spread across every stat (40 -> 1, 99 -> 10).
+  const ovrToStats = (ovr) => evenStats(1 + (ovr - 40) / 59 * 9);
+
+  const ARCHETYPES = [
+    { id: "sharp", name: "Sharpshooter", blurb: "Lives at the arc", stats: { fin: 3, mid: 7, thr: 10, ft: 8, han: 5, pas: 3, per: 4, int: 2, reb: 3, sta: 5 } },
+    { id: "slasher", name: "Slasher", blurb: "Attacks the rim", stats: { fin: 10, mid: 4, thr: 2, ft: 6, han: 8, pas: 3, per: 4, int: 3, reb: 4, sta: 6 } },
+    { id: "general", name: "Floor General", blurb: "Sets up teammates", stats: { fin: 4, mid: 5, thr: 5, ft: 6, han: 8, pas: 10, per: 5, int: 1, reb: 2, sta: 4 } },
+    { id: "lockdown", name: "Lockdown", blurb: "Steals and contests", stats: { fin: 4, mid: 4, thr: 3, ft: 4, han: 5, pas: 3, per: 10, int: 6, reb: 5, sta: 6 } },
+    { id: "big", name: "Big Man", blurb: "Blocks and boards", stats: { fin: 8, mid: 3, thr: 1, ft: 3, han: 2, pas: 3, per: 3, int: 10, reb: 10, sta: 7 } },
+    { id: "balanced", name: "Balanced", blurb: "A bit of everything", stats: evenStats(5) },
+  ];
+  const sameStats = (a, b) => STATS.every((s) => a[s.key] === b[s.key]);
+  const buildName = (stats) => (ARCHETYPES.find((a) => sameStats(a.stats, stats)) || { name: "Custom build" }).name;
+
+  const DEFAULT_ROSTER = [
+    { id: "papajohns", name: "Papa John's", color: "#9E1B2F", ovr: 74, logo: null },
+    { id: "subway", name: "Subway", color: "#1E7F3A", ovr: 70, logo: null },
+    { id: "panda", name: "Panda Express", color: "#D0402A", ovr: 82, logo: null },
+    { id: "chipotle", name: "Chipotle", color: "#6E3420", ovr: 78, logo: null },
+  ];
+  const archetypeStats = (id) => ({ ...ARCHETYPES.find((a) => a.id === id).stats });
+  const DEFAULT_PEOPLE = [
+    { id: "john", name: "John", color: "#2E6FD8", logo: null, stats: archetypeStats("sharp") },
+    { id: "joe", name: "Joe", color: "#D9822B", logo: null, stats: archetypeStats("lockdown") },
+    { id: "maya", name: "Maya", color: "#8E44AD", logo: null, stats: archetypeStats("general") },
+    { id: "sam", name: "Sam", color: "#138A72", logo: null, stats: archetypeStats("big") },
+  ];
+  const NEW_COLORS = ["#7B3FB2", "#0E8A8A", "#D08A00", "#B0306A", "#3B6E2A", "#1D4E89", "#C0392B", "#2C3E50"];
+
+  function loadRoster() {
+    const saved = store.get("jb.roster", null);
+    const valid = Array.isArray(saved) && saved.length >= 2 && saved.every((c) => c && c.id && c.name);
+    return valid ? saved : DEFAULT_ROSTER.map((c) => ({ ...c }));
+  }
+  function loadPeople() {
+    const saved = store.get("jb.players", null);
+    const valid = Array.isArray(saved) && saved.length >= 2 &&
+      saved.every((p) => p && p.id && p.name && p.stats && statTotal(p.stats) === BUDGET);
+    return valid ? saved : DEFAULT_PEOPLE.map((p) => ({ ...p, stats: { ...p.stats } }));
+  }
+  let roster = loadRoster();
+  let people = loadPeople();
+  let settings = Object.assign(
+    {
+      tab: "quick", homeId: "panda", awayId: "subway", mode: "fair",
+      length: "quick", series: 1, qtrSec: 45, speed: 1, format: "1v1",
+      comp: { home: { choice: "papajohns", players: ["john", "sam"] }, away: { choice: "subway", players: ["joe", "maya"] } },
+    },
+    store.get("jb.settings", {})
+  );
+  let rivalry = store.get("jb.rivalry", {});
+  const saveRoster = () => store.set("jb.roster", roster);
+  const savePeople = () => store.set("jb.players", people);
+  const saveSettings = () => store.set("jb.settings", settings);
+
+  const byId = (id) => roster.find((c) => c.id === id);
+  const byName = (name) => roster.find((c) => c.name.toLowerCase() === name.toLowerCase());
+  const personById = (id) => people.find((p) => p.id === id);
+  const perSide = () => (settings.format === "2v2" ? 2 : 1);
+  const cleanName = (raw) => raw.trim().replace(/\s+/g, " ");
+  const newId = (prefix) => prefix + Date.now().toString(36) + Math.floor(Math.random() * 1000);
+
+  function addChoice(name) {
+    const c = { id: newId("c"), name, color: NEW_COLORS[roster.length % NEW_COLORS.length], ovr: 70, logo: null };
+    roster.push(c);
+    saveRoster();
+    return c;
+  }
+
+  function ensureMatchup() {
+    if (!byId(settings.homeId)) settings.homeId = roster[0].id;
+    if (!byId(settings.awayId) || settings.awayId === settings.homeId) {
+      settings.awayId = roster.find((c) => c.id !== settings.homeId).id;
+    }
+  }
+  // Every player slot must hold a different person; fill gaps with whoever is free.
+  function ensureComp() {
+    const c = settings.comp;
+    for (const s of [c.home, c.away]) if (!Array.isArray(s.players)) s.players = [];
+    if (!byId(c.home.choice)) c.home.choice = roster[0].id;
+    if (!byId(c.away.choice) || c.away.choice === c.home.choice) {
+      c.away.choice = roster.find((r) => r.id !== c.home.choice).id;
+    }
+    const used = new Set();
+    for (const [side, slot] of [[c.home, 0], [c.away, 0], [c.home, 1], [c.away, 1]]) {
+      let id = side.players[slot];
+      if (!personById(id) || used.has(id)) {
+        const free = people.find((p) => !used.has(p.id));
+        id = free ? free.id : null;
+      }
+      side.players[slot] = id;
+      if (id) used.add(id);
+    }
+  }
+  const compReady = () => [settings.comp.home, settings.comp.away].every((s) => s.players.slice(0, perSide()).every(Boolean));
+
+  /* ---------- Display helpers ---------- */
+  const tier = (ovr) => (ovr >= 88 ? "MVP" : ovr >= 75 ? "All-Star" : ovr >= 60 ? "Starter" : "Bench");
+  const ppg = (ovr) => Math.round(5 + (ovr - 40) * 0.45);
+  function initials(name) {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return "?";
+    const second = words[1] ? words[1][0] : (words[0][1] || "");
+    return (words[0][0] + second).toUpperCase();
+  }
+  function tokenHTML(c, size) {
+    const inner = c.logo ? `<img src="${c.logo}" alt="">` : `<span>${esc(initials(c.name))}</span>`;
+    return `<span class="token" style="--tc:${c.color};--ts:${size}px" aria-hidden="true">${inner}</span>`;
+  }
+  const topStats = (stats, n) => [...STATS].sort((a, b) => stats[b.key] - stats[a.key]).slice(0, n);
+  const topStatsText = (stats) => topStats(stats, 3).map((s) => `${s.abbr} ${stats[s.key]}`).join(" · ");
+  const imgCache = new Map();
+  function logoImage(c) {
+    if (!c.logo) return null;
+    let im = imgCache.get(c.logo);
+    if (!im) { im = new Image(); im.src = c.logo; imgCache.set(c.logo, im); }
+    return im.complete && im.naturalWidth ? im : null;
+  }
+  const pairKey = (a, b) => [a, b].sort().join("|");
+
+  /* ---------- Simulation engine (no drawing) ---------- */
+  const SHOT = {
+    rim: { pts: 2, base: .55, per: .035, flight: .55, stat: "fin", guard: "int" },
+    mid: { pts: 2, base: .40, per: .03, flight: .8, stat: "mid", guard: "per" },
+    three: { pts: 3, base: .33, per: .03, flight: .95, stat: "thr", guard: "per" },
+  };
+  const FT_TIME = .95, FT_WALK = .5;
+  function weightedIndex(weights) {
+    let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < weights.length; i++) { r -= weights[i]; if (r <= 0) return i; }
+    return weights.length - 1;
+  }
+  // Players take more of the shots they're good at.
+  function pickShotFor(s) {
+    return ["rim", "mid", "three"][weightedIndex([.25 + .03 * s.fin, .2 + .025 * s.mid, .15 + .03 * s.thr])];
+  }
+  const avg = (team, key) => team.reduce((sum, p) => sum + p[key], 0) / team.length;
+
+  // One trip down the floor. `off`/`def` are arrays of player stats; defender slot i guards offense slot i.
+  // `tired(team, slot)` is 0 (fresh) to 1 (exhausted), already reduced by that player's Stamina.
+  function rollPossession(off, def, tiredOff, tiredDef) {
+    const p = {
+      reset: .5, drive: rand(.9, 1.6), flight: 0, after: .75, ftTime: 0,
+      pts: 0, made: false, oreb: false, passed: false, contested: false,
+      fouled: false, fts: [], ftPts: 0, intercepted: false,
+    };
+    const finishTurnover = (stealer, intercepted) => {
+      p.kind = "turnover";
+      p.stealer = stealer;
+      p.intercepted = intercepted;
+      p.shooter = p.handler;
+      p.drive *= .65;
+      p.dur = p.reset + p.drive + p.after;
+      return p;
+    };
+    p.handler = Math.floor(Math.random() * off.length);
+    const h = off[p.handler], hd = def[p.handler];
+    // Ball Handling vs. Perimeter Defense: steal off the dribble.
+    if (chance(clamp(.07 + (hd.per - h.han) * .012 + .03 * tiredOff(p.handler), .02, .22))) return finishTurnover(p.handler, false);
+    p.shooter = p.handler;
+    // Passing (2v2): pass to the teammate, unless the teammate's defender jumps the lane.
+    if (off.length > 1 && chance(clamp(.3 + (h.pas - 5) * .05, .1, .7))) {
+      const receiver = 1 - p.handler;
+      if (chance(clamp(.05 + (def[receiver].per - h.pas) * .01, .01, .15))) return finishTurnover(receiver, true);
+      p.passed = true;
+      p.shooter = receiver;
+      p.drive += .35;
+    }
+    const s = off[p.shooter], sd = def[p.shooter];
+    p.shot = pickShotFor(s);
+    const shot = SHOT[p.shot];
+    p.flight = shot.flight;
+    const guardStat = sd[shot.guard];
+    // Getting open: a good pass, or (on your own) Ball Handling, beats the defender's contest.
+    const creation = p.passed ? .12 + (h.pas - 5) * .03 : (s.han - 5) * .03;
+    p.contested = chance(clamp(.45 + (guardStat - 5) * .06 * (1 - .3 * tiredDef(p.shooter)) - creation, .08, .88));
+    // Interior Defense vs. Finishing: blocks only happen at the rim.
+    if (p.shot === "rim" && p.contested && chance(clamp(.06 + (sd.int - 5) * .03 - (s.fin - 5) * .01, .01, .22))) {
+      p.kind = "block";
+      p.flight = .7;
+    } else {
+      p.kind = "shot";
+      let make = shot.base + (s[shot.stat] - 5) * shot.per;
+      if (p.contested) make -= .09 + (guardStat - 5) * .012;
+      if (p.passed) make += .03;
+      make -= .07 * tiredOff(p.shooter);
+      if (p.shot === "rim" && chance(p.contested ? .18 : .1)) { p.fouled = true; make -= .12; }
+      p.made = chance(clamp(make, .06, .9));
+      p.pts = p.made ? shot.pts : 0;
+      if (p.fouled) {
+        const ftChance = clamp(.62 + (s.ft - 5) * .035 - .05 * tiredOff(p.shooter), .3, .95);
+        p.fts = Array.from({ length: p.made ? 1 : 2 }, () => chance(ftChance));
+        p.ftPts = p.fts.filter(Boolean).length;
+        p.ftTime = FT_WALK + p.fts.length * FT_TIME;
+      } else if (!p.made) {
+        p.oreb = chance(clamp(.25 + (avg(off, "reb") - avg(def, "reb")) * .035, .08, .55));
+        p.rebounder = weightedIndex((p.oreb ? off : def).map((pl) => pl.reb + 1));
+      }
+    }
+    p.dur = p.reset + p.drive + p.flight + p.after + p.ftTime;
+    return p;
+  }
+
+  // One game. `playedBefore` is how many quarters these players already played (earlier games of a series).
+  class Match {
+    constructor(teams, quarters, quarterSeconds, playedBefore = 0) {
+      this.teams = teams;
+      this.nq = quarters;
+      this.qLen = quarterSeconds;
+      this.playedBefore = playedBefore;
+      this.elapsed = 0;
+      this.q = 1;
+      this.t = 0;
+      this.score = [0, 0];
+      this.byQ = [[0, 0]];
+      this.box = teams.map((t) => t.map(() => ({ pts: 0, ast: 0, reb: 0, stl: 0, blk: 0 })));
+      this.shots = [{ att: 0, contested: 0 }, { att: 0, contested: 0 }];
+      this.first = Math.random() < .5 ? 0 : 1;
+      this.ball = this.first;
+      this.ot = false;
+      this.done = false;
+      this.winner = null;
+      this.lastEvent = null;
+    }
+    // Quarters played so far, counting earlier games of the series. Two full games = fully tired.
+    quartersPlayed() { return this.playedBefore + this.elapsed / this.qLen; }
+    tiredness(team, slot) {
+      return Math.min(1, this.quartersPlayed() / 8) * (10 - this.teams[team][slot].sta) / 9;
+    }
+    next() {
+      const o = this.ball, d = 1 - o;
+      const p = rollPossession(this.teams[o], this.teams[d], (s) => this.tiredness(o, s), (s) => this.tiredness(d, s));
+      p.off = o;
+      return p;
+    }
+    record(p) {
+      const o = p.off, d = 1 - o;
+      if (p.kind === "turnover") { this.box[d][p.stealer].stl++; return; }
+      this.shots[o].att++;
+      if (p.contested || p.kind === "block") this.shots[o].contested++;
+      if (p.kind === "block") { this.box[d][p.shooter].blk++; return; }
+      this.box[o][p.shooter].pts += p.pts + p.ftPts;
+      if (p.made && p.passed) this.box[o][p.handler].ast++;
+      if (!p.made && !p.fouled) this.box[p.oreb ? o : d][p.rebounder].reb++;
+    }
+    apply(p) {
+      this.lastEvent = null;
+      this.record(p);
+      this.elapsed += p.dur;
+      const pts = p.pts + p.ftPts;
+      if (pts) {
+        this.score[p.off] += pts;
+        this.byQ[this.byQ.length - 1][p.off] += pts;
+      }
+      this.ball = p.kind === "shot" && !p.made && !p.fouled && p.oreb ? p.off : 1 - p.off;
+      if (this.ot) {
+        if (this.score[0] !== this.score[1]) { this.done = true; this.winner = this.score[0] > this.score[1] ? 0 : 1; this.lastEvent = "final"; }
+        return;
+      }
+      this.t += p.dur;
+      if (this.t < this.qLen) return;
+      this.t = this.qLen;
+      if (this.q < this.nq) {
+        this.lastEvent = "endq";
+        this.q += 1;
+        this.t = 0;
+        this.byQ.push([0, 0]);
+        this.ball = this.q % 2 === 0 ? 1 - this.first : this.first;
+      } else if (this.score[0] !== this.score[1]) {
+        this.done = true;
+        this.winner = this.score[0] > this.score[1] ? 0 : 1;
+        this.lastEvent = "final";
+      } else {
+        this.ot = true;
+        this.byQ.push([0, 0]);
+        this.ball = Math.random() < .5 ? 0 : 1;
+        this.lastEvent = "ot";
+      }
+    }
+  }
+
+  function simulateSeries(teamStats, quarters, quarterSeconds, bestOf) {
+    const need = Math.ceil(bestOf / 2), wins = [0, 0];
+    let played = 0;
+    while (wins[0] < need && wins[1] < need) {
+      const m = new Match(teamStats, quarters, quarterSeconds, played);
+      while (!m.done) m.apply(m.next());
+      wins[m.winner]++;
+      played = m.quartersPlayed();
+    }
+    return wins[0] > wins[1] ? 0 : 1;
+  }
+  function projectOdds(teamStats, quarters, quarterSeconds, bestOf, runs) {
+    let homeWins = 0;
+    for (let i = 0; i < runs; i++) if (simulateSeries(teamStats, quarters, quarterSeconds, bestOf) === 0) homeWins++;
+    return homeWins / runs;
+  }
+
+  // The two sides for the current tab: what they play for and who's on court.
+  function buildTeams() {
+    if (settings.tab !== "competition") {
+      ensureMatchup();
+      const fair = matchRules().fair;
+      return [byId(settings.homeId), byId(settings.awayId)].map((c) => ({
+        choice: c,
+        players: [{ name: c.name, color: c.color, logo: c.logo, stats: ovrToStats(fair ? 70 : c.ovr) }],
+      }));
+    }
+    ensureComp();
+    const n = perSide();
+    return [settings.comp.home, settings.comp.away].map((s) => ({
+      choice: byId(s.choice),
+      players: s.players.slice(0, n).map((id) => {
+        const p = personById(id);
+        return { name: p.name, color: p.color, logo: p.logo, stats: { ...p.stats } };
+      }),
+    }));
+  }
+  // Quick always plays one fair 45-second game, so the first screen has nothing to set.
+  function matchRules() {
+    if (settings.tab === "quick") return { quarters: 1, qtrSec: 45, series: 1, fair: true };
+    return {
+      quarters: settings.length === "full" ? 4 : 1,
+      qtrSec: settings.qtrSec,
+      series: settings.series,
+      fair: settings.tab === "creative" && settings.mode === "fair",
+    };
+  }
+
+  /* ---------- Setup screen ---------- */
+  const sides = {
+    home: { el: document.querySelector('[data-side="home"]'), input: $("#pick-home"), range: $("#ovr-home"), key: "homeId" },
+    away: { el: document.querySelector('[data-side="away"]'), input: $("#pick-away"), range: $("#ovr-away"), key: "awayId" },
+  };
+
+  function setSeg(segEl, value) {
+    segEl.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(value))));
+  }
+
+  function renderCreativeSide(side) {
+    const c = byId(settings[side.key]);
+    side.el.style.setProperty("--tc", c.color);
+    side.el.querySelector(".tok-slot").innerHTML = tokenHTML(c, 76);
+    if (document.activeElement !== side.input) side.input.value = c.name;
+    side.el.querySelector(".rating").hidden = matchRules().fair;
+    side.range.value = c.ovr;
+    side.el.querySelector(".ovr-n").textContent = c.ovr;
+    side.el.querySelector(".tier").textContent = tier(c.ovr);
+    side.el.querySelector(".ppg").textContent = `plays like a ${ppg(c.ovr)} ppg scorer`;
+  }
+
+  function renderCompSide(el, key) {
+    const s = settings.comp[key], ch = byId(s.choice), n = perSide();
+    const personOpts = people.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
+    el.style.setProperty("--tc", ch.color);
+    let html = `
+      <div class="tok-slot">${tokenHTML(ch, 64)}</div>
+      <label class="who" for="cc-${key}">Playing for</label>
+      <input class="text-in" id="cc-${key}" data-choice="${key}" list="choice-list" maxlength="24" autocomplete="off" placeholder="Type an option" value="${esc(ch.name)}">
+      <p class="side-error" id="cc-${key}-err" aria-live="polite"></p>`;
+    for (let i = 0; i < n; i++) {
+      const p = personById(s.players[i]);
+      html += `<label class="who" for="cp-${key}-${i}">${n > 1 ? `Player ${i + 1}` : "Player"}</label>`;
+      html += p
+        ? `<div class="pl-row">${tokenHTML(p, 30)}<select id="cp-${key}-${i}" data-player="${key}" data-slot="${i}">${personOpts}</select></div>
+           <div class="build"><span class="build-name">${esc(buildName(p.stats))}</span>
+             <span class="chips">${topStats(p.stats, 3).map((st) => `<span class="chip">${st.abbr} ${p.stats[st.key]}</span>`).join("")}</span></div>`
+        : `<p class="hint">Add more players below for 2v2.</p>`;
+    }
+    el.innerHTML = html;
+    for (let i = 0; i < n; i++) {
+      const sel = el.querySelector(`#cp-${key}-${i}`);
+      if (sel) sel.value = s.players[i];
+    }
+  }
+
+  function rivalryText(h, a) {
+    const rec = rivalry[pairKey(h.id, a.id)];
+    if (!rec) return `First meeting between ${esc(h.name)} and ${esc(a.name)}.`;
+    const hw = rec[h.id] || 0, aw = rec[a.id] || 0;
+    if (hw === aw) return `All-time record tied <b>${hw}–${aw}</b>.`;
+    const lead = hw > aw ? h : a;
+    return `<b>${esc(lead.name)}</b> leads the all-time record <b>${Math.max(hw, aw)}–${Math.min(hw, aw)}</b>.`;
+  }
+
+  function renderRoster() {
+    $("#choice-list").innerHTML = roster.map((c) => `<option value="${esc(c.name)}"></option>`).join("");
+    $("#choices-title").textContent = `Saved options (${roster.length})`;
+    $("#roster").innerHTML = roster.map((c) => `
+      <li>
+        ${tokenHTML(c, 36)}
+        <span class="rmain"><span class="rname">${esc(c.name)}</span></span>
+        <button type="button" class="ghost" data-edit="${c.id}" aria-label="Edit ${esc(c.name)}">Edit</button>
+      </li>`).join("");
+  }
+  function renderPeople() {
+    $("#people").innerHTML = people.map((p) => `
+      <li>
+        ${tokenHTML(p, 36)}
+        <span class="rmain"><span class="rname">${esc(p.name)}</span><span class="rsub">${esc(buildName(p.stats))} · ${topStatsText(p.stats)}</span></span>
+        <button type="button" class="ghost" data-edit-person="${p.id}" aria-label="Edit ${esc(p.name)}">Edit</button>
+      </li>`).join("");
+  }
+
+  function lengthSummary() {
+    const rules = matchRules();
+    const perGame = rules.quarters === 4 ? rules.qtrSec * 4 + 6 : rules.qtrSec;
+    const fmt = (sec) => (sec < 90 ? `${sec} sec` : `${Math.round(sec / 60 * 2) / 2} min`);
+    return rules.series === 3
+      ? `Best of 3 · ${fmt(perGame * 2)}–${fmt(perGame * 3 + 6)}`
+      : `${rules.quarters === 4 ? "Full game" : "Quick game"} · about ${fmt(perGame)}`;
+  }
+
+  function renderSetup() {
+    const quick = settings.tab === "quick", competition = settings.tab === "competition";
+    document.querySelectorAll(".tabs [role=tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === settings.tab)));
+    $("#comp-panel").hidden = !competition;
+    $("#people-panel").hidden = !competition;
+    $("#creative-panel").hidden = competition;
+    // Quick hides every setting: just the two options, the button, and the guide.
+    $("#field-mode").hidden = quick;
+    $("#creative-step").hidden = quick;
+    $("#opts-panel").hidden = quick;
+    $("#choices-panel").hidden = quick;
+    $("#howto").hidden = !quick;
+
+    let names;
+    if (!competition) {
+      ensureMatchup();
+      renderCreativeSide(sides.home);
+      renderCreativeSide(sides.away);
+      setSeg($("#seg-mode"), settings.mode);
+      $("#mode-hint").textContent = settings.mode === "fair"
+        ? "Pure chance. Neither side has an edge."
+        : "Drag a rating up to make that option a better player. Better players win more often, but not always.";
+      const h = byId(settings.homeId), a = byId(settings.awayId);
+      $("#creative-rivalry").innerHTML = rivalryText(h, a);
+      names = [h.name, a.name];
+    } else {
+      ensureComp();
+      setSeg($("#seg-format"), settings.format);
+      renderCompSide($("#comp-home"), "home");
+      renderCompSide($("#comp-away"), "away");
+      const h = byId(settings.comp.home.choice), a = byId(settings.comp.away.choice);
+      $("#comp-rivalry").innerHTML = rivalryText(h, a);
+      renderPeople();
+      names = [h.name, a.name];
+    }
+    setSeg($("#seg-length"), settings.length);
+    setSeg($("#seg-series"), settings.series);
+    setSeg($("#seg-qtr"), settings.qtrSec);
+    const ready = !competition || compReady();
+    $("#tipoff").disabled = !ready;
+    $("#tipoff-sub").textContent = ready ? `${names[0]} vs ${names[1]} · ${lengthSummary()}` : "2v2 needs at least 4 players. Add one under Your players.";
+    renderRoster();
+    scheduleOdds();
+  }
+
+  let oddsTimer = 0;
+  function scheduleOdds() {
+    clearTimeout(oddsTimer);
+    oddsTimer = setTimeout(updateOdds, 150);
+  }
+  function updateOdds() {
+    if (settings.tab === "quick" || (settings.tab === "competition" && !compReady())) return;
+    const teams = buildTeams(), rules = matchRules();
+    const [h, a] = teams.map((t) => t.choice);
+    const runs = rules.series === 3 ? 600 : 1200;
+    let pHome = .5;
+    if (rules.fair) {
+      $("#proj-text").textContent = "Fair odds: a true coin flip, with extra steps.";
+    } else {
+      pHome = projectOdds(teams.map((t) => t.players.map((p) => p.stats)), rules.quarters, rules.qtrSec, rules.series, runs);
+      $("#proj-text").textContent = `How often each side won ${runs.toLocaleString()} practice ${rules.series === 3 ? "series" : "games"} with these settings.`;
+    }
+    const hp = Math.round(pHome * 100);
+    $("#proj-hl").textContent = `${h.name} ${hp}%`;
+    $("#proj-al").textContent = `${100 - hp}% ${a.name}`;
+    const bh = $("#proj-h"), ba = $("#proj-a");
+    bh.style.background = h.color; ba.style.background = a.color;
+    bh.style.flexBasis = `${hp}%`; ba.style.flexBasis = `${100 - hp}%`;
+  }
+
+  /* Typing an option: reuse a saved one with that name, or create it. */
+  function resolveTypedChoice(input, currentId, otherId, errEl) {
+    const name = cleanName(input.value);
+    const current = byId(currentId);
+    errEl.textContent = "";
+    if (!name) { input.value = current.name; return currentId; }
+    const existing = byName(name);
+    if (existing && existing.id === otherId) {
+      errEl.textContent = "Pick something different from the other side.";
+      input.value = current.name;
+      return currentId;
+    }
+    return (existing || addChoice(name)).id;
+  }
+
+  document.querySelector(".tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tab]");
+    if (!b) return;
+    settings.tab = b.dataset.tab;
+    saveSettings();
+    renderSetup();
+  });
+
+  Object.values(sides).forEach((side) => {
+    const otherKey = side.key === "homeId" ? "awayId" : "homeId";
+    side.input.addEventListener("focus", () => side.input.select());
+    side.input.addEventListener("change", () => {
+      settings[side.key] = resolveTypedChoice(side.input, settings[side.key], settings[otherKey], side.el.querySelector(".side-error"));
+      side.input.blur();
+      saveSettings();
+      renderSetup();
+    });
+    side.input.addEventListener("keydown", (e) => { if (e.key === "Enter") side.input.blur(); });
+    side.range.addEventListener("input", () => {
+      const c = byId(settings[side.key]);
+      c.ovr = Number(side.range.value);
+      side.el.querySelector(".ovr-n").textContent = c.ovr;
+      side.el.querySelector(".tier").textContent = tier(c.ovr);
+      side.el.querySelector(".ppg").textContent = `plays like a ${ppg(c.ovr)} ppg scorer`;
+      scheduleOdds();
+    });
+    side.range.addEventListener("change", saveRoster);
+  });
+
+  const compPanel = $("#comp-panel");
+  compPanel.addEventListener("focusin", (e) => { if (e.target.dataset.choice) e.target.select(); });
+  compPanel.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset.choice) e.target.blur(); });
+  compPanel.addEventListener("change", (e) => {
+    const t = e.target, c = settings.comp;
+    if (t.dataset.choice) {
+      const key = t.dataset.choice, other = key === "home" ? "away" : "home";
+      const nextId = resolveTypedChoice(t, c[key].choice, c[other].choice, $(`#cc-${key}-err`));
+      const errText = $(`#cc-${key}-err`).textContent;
+      c[key].choice = nextId;
+      saveSettings();
+      renderSetup();
+      $(`#cc-${key}-err`).textContent = errText;
+      return;
+    }
+    if (t.dataset.player) {
+      const side = c[t.dataset.player], slot = Number(t.dataset.slot);
+      const prev = side.players[slot];
+      // Picking someone already on court swaps the two players.
+      for (const s of [c.home, c.away]) {
+        const i = s.players.indexOf(t.value);
+        if (i !== -1) s.players[i] = prev;
+      }
+      side.players[slot] = t.value;
+      saveSettings();
+      renderSetup();
+    }
+  });
+
+  function bindSeg(id, onPick) {
+    $(id).addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-v]");
+      if (b) onPick(b.dataset.v);
+    });
+  }
+  const setAndRender = (key, value) => { settings[key] = value; saveSettings(); renderSetup(); };
+  bindSeg("#seg-format", (v) => setAndRender("format", v));
+  bindSeg("#seg-mode", (v) => setAndRender("mode", v));
+  bindSeg("#seg-length", (v) => setAndRender("length", v));
+  bindSeg("#seg-series", (v) => setAndRender("series", Number(v)));
+  bindSeg("#seg-qtr", (v) => setAndRender("qtrSec", Number(v)));
+
+  /* ---------- Shared image upload ---------- */
+  function readLogo(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const im = new Image();
+        im.onerror = reject;
+        im.onload = () => {
+          const size = 128, cv = document.createElement("canvas");
+          cv.width = cv.height = size;
+          const side = Math.min(im.width, im.height);
+          cv.getContext("2d").drawImage(im, (im.width - side) / 2, (im.height - side) / 2, side, side, 0, 0, size, size);
+          resolve(cv.toDataURL("image/png"));
+        };
+        im.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  async function takeImage(input, errEl, onImage) {
+    const file = input.files[0];
+    input.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { errEl.textContent = "That file isn't an image. Try a PNG or JPG."; return; }
+    if (file.size > 8 * 1024 * 1024) { errEl.textContent = "That image is over 8 MB. Try a smaller one."; return; }
+    try {
+      onImage(await readLogo(file));
+      errEl.textContent = "";
+    } catch {
+      errEl.textContent = "Couldn't read that image. Try a different file.";
+    }
+  }
+
+  /* ---------- Option editor ---------- */
+  const editor = $("#editor"), edName = $("#ed-name"), edColor = $("#ed-color"), edErr = $("#ed-error");
+  const edDelete = $("#ed-delete"), edLogoClear = $("#ed-logo-clear");
+  let editingId = null, pendingLogo = null, deleteArmed = false;
+
+  function renderEditorToken() {
+    $("#editor-token").innerHTML = tokenHTML({ name: edName.value || "?", color: edColor.value, logo: pendingLogo }, 64);
+    edLogoClear.hidden = !pendingLogo;
+  }
+  function openEditor(id) {
+    editingId = id;
+    const c = id ? byId(id) : { name: "", color: NEW_COLORS[roster.length % NEW_COLORS.length], logo: null };
+    edName.value = c.name;
+    edColor.value = c.color;
+    pendingLogo = c.logo;
+    edErr.textContent = "";
+    deleteArmed = false;
+    edDelete.textContent = "Delete";
+    edDelete.hidden = !id;
+    $("#editor-title").textContent = id ? `Edit ${c.name}` : "New option";
+    editor.hidden = false;
+    renderEditorToken();
+    edName.focus();
+  }
+  const closeEditor = () => { editor.hidden = true; editingId = null; };
+
+  $("#add-btn").addEventListener("click", () => openEditor(null));
+  $("#roster").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-edit]");
+    if (b) openEditor(b.dataset.edit);
+  });
+  edName.addEventListener("input", renderEditorToken);
+  edColor.addEventListener("input", renderEditorToken);
+  $("#ed-logo").addEventListener("change", (e) => takeImage(e.target, edErr, (img) => { pendingLogo = img; renderEditorToken(); }));
+  edLogoClear.addEventListener("click", () => { pendingLogo = null; renderEditorToken(); });
+  $("#ed-cancel").addEventListener("click", closeEditor);
+  edDelete.addEventListener("click", () => {
+    if (roster.length <= 2) { edErr.textContent = "Keep at least two options so there's a matchup."; return; }
+    if (!deleteArmed) { deleteArmed = true; edDelete.textContent = "Tap again to delete"; return; }
+    roster = roster.filter((c) => c.id !== editingId);
+    saveRoster();
+    closeEditor();
+    renderSetup();
+  });
+  editor.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = cleanName(edName.value);
+    if (!name) { edErr.textContent = "Give this option a name."; edName.focus(); return; }
+    const clash = byName(name);
+    if (clash && clash.id !== editingId) { edErr.textContent = `You already have an option called ${clash.name}.`; return; }
+    if (editingId) Object.assign(byId(editingId), { name, color: edColor.value, logo: pendingLogo });
+    else roster.push({ id: newId("c"), name, color: edColor.value, ovr: 70, logo: pendingLogo });
+    if (!saveRoster()) edErr.textContent = "Saved for now, but this browser couldn't store it for next time.";
+    else closeEditor();
+    renderSetup();
+  });
+
+  /* ---------- Player editor ---------- */
+  const pEditor = $("#person-editor"), peName = $("#pe-name"), peColor = $("#pe-color"), peErr = $("#pe-error");
+  const peDelete = $("#pe-delete"), peLogoClear = $("#pe-logo-clear");
+  let editingPersonId = null, pendingPhoto = null, pendingStats = null, personDeleteArmed = false;
+
+  function renderPersonToken() {
+    $("#pe-token").innerHTML = tokenHTML({ name: peName.value || "?", color: peColor.value, logo: pendingPhoto }, 64);
+    peLogoClear.hidden = !pendingPhoto;
+  }
+  function renderPersonStats() {
+    const left = BUDGET - statTotal(pendingStats);
+    const num = $("#pe-left");
+    num.textContent = left;
+    num.className = "budget-num" + (left === 0 ? " done" : "");
+    $("#pe-budget-hint").textContent = left === 0
+      ? "All points spent. Lower one stat to raise another."
+      : `Spend all ${BUDGET} to save. Every stat is 1 to 10.`;
+    $("#pe-archetypes").innerHTML = ARCHETYPES.map((a) =>
+      `<button type="button" data-arch="${a.id}" aria-pressed="${sameStats(a.stats, pendingStats)}"><b>${a.name}</b><small>${a.blurb}</small></button>`).join("");
+    $("#pe-stats").innerHTML = STAT_GROUPS.map((g) => `
+      <div class="stat-group">
+        <h4>${g.name}</h4>
+        ${g.stats.map((s) => {
+          const v = pendingStats[s.key];
+          return `
+          <div class="stat-row">
+            <span class="stat-name">${s.name}${s.tag ? `<em>${s.tag}</em>` : ""}</span>
+            <span class="stepper">
+              <button type="button" data-step="${s.key}" data-d="-1" aria-label="Lower ${s.name}" ${v <= STAT_MIN ? "disabled" : ""}>−</button>
+              <output aria-label="${s.name}">${v}</output>
+              <button type="button" data-step="${s.key}" data-d="1" aria-label="Raise ${s.name}" ${v >= STAT_MAX || left <= 0 ? "disabled" : ""}>+</button>
+            </span>
+            <span class="stat-desc">${s.desc}</span>
+            <span class="stat-vs">${s.vs}</span>
+            <span class="pips" aria-hidden="true">${Array.from({ length: STAT_MAX }, (_, i) => `<i class="${i < v ? "on" : ""}"></i>`).join("")}</span>
+          </div>`;
+        }).join("")}
+      </div>`).join("");
+  }
+  function openPersonEditor(id) {
+    editingPersonId = id;
+    const p = id ? personById(id) : { name: "", color: NEW_COLORS[people.length % NEW_COLORS.length], logo: null, stats: evenStats(5) };
+    peName.value = p.name;
+    peColor.value = p.color;
+    pendingPhoto = p.logo;
+    pendingStats = { ...p.stats };
+    peErr.textContent = "";
+    personDeleteArmed = false;
+    peDelete.textContent = "Delete";
+    peDelete.hidden = !id;
+    $("#person-editor-title").textContent = id ? `Edit ${p.name}` : "New player";
+    pEditor.hidden = false;
+    renderPersonToken();
+    renderPersonStats();
+    peName.focus();
+  }
+  const closePersonEditor = () => { pEditor.hidden = true; editingPersonId = null; };
+
+  $("#add-person-btn").addEventListener("click", () => openPersonEditor(null));
+  $("#people").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-edit-person]");
+    if (b) openPersonEditor(b.dataset.editPerson);
+  });
+  $("#pe-archetypes").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-arch]");
+    if (!b) return;
+    pendingStats = archetypeStats(b.dataset.arch);
+    renderPersonStats();
+  });
+  $("#pe-stats").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-step]");
+    if (!b || b.disabled) return;
+    const key = b.dataset.step, d = Number(b.dataset.d);
+    const next = pendingStats[key] + d;
+    if (next < STAT_MIN || next > STAT_MAX) return;
+    if (d > 0 && statTotal(pendingStats) >= BUDGET) return;
+    pendingStats[key] = next;
+    renderPersonStats();
+    const again = $(`#pe-stats [data-step="${key}"][data-d="${d}"]`);
+    if (again && !again.disabled) again.focus();
+  });
+  peName.addEventListener("input", renderPersonToken);
+  peColor.addEventListener("input", renderPersonToken);
+  $("#pe-logo").addEventListener("change", (e) => takeImage(e.target, peErr, (img) => { pendingPhoto = img; renderPersonToken(); }));
+  peLogoClear.addEventListener("click", () => { pendingPhoto = null; renderPersonToken(); });
+  $("#pe-cancel").addEventListener("click", closePersonEditor);
+  peDelete.addEventListener("click", () => {
+    if (people.length <= 2) { peErr.textContent = "Keep at least two players so there's a matchup."; return; }
+    if (!personDeleteArmed) { personDeleteArmed = true; peDelete.textContent = "Tap again to delete"; return; }
+    people = people.filter((p) => p.id !== editingPersonId);
+    savePeople();
+    closePersonEditor();
+    renderSetup();
+  });
+  pEditor.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = cleanName(peName.value);
+    if (!name) { peErr.textContent = "Give this player a name."; peName.focus(); return; }
+    const clash = people.find((p) => p.name.toLowerCase() === name.toLowerCase() && p.id !== editingPersonId);
+    if (clash) { peErr.textContent = `You already have a player called ${clash.name}.`; return; }
+    const left = BUDGET - statTotal(pendingStats);
+    if (left !== 0) { peErr.textContent = `Spend all ${BUDGET} points before saving. ${left} left.`; return; }
+    const data = { name, color: peColor.value, logo: pendingPhoto, stats: { ...pendingStats } };
+    if (editingPersonId) Object.assign(personById(editingPersonId), data);
+    else people.push({ id: newId("p"), ...data });
+    if (!savePeople()) peErr.textContent = "Saved for now, but this browser couldn't store it for next time.";
+    else closePersonEditor();
+    renderSetup();
+  });
+
+  /* ---------- Court drawing ---------- */
+  const RIM = { x: 25, y: 5.25 };
+  const CHECK = { x: 25, y: 33 };
+  const GUARD = { x: 25, y: 27 };
+  const FT_SPOT = { x: 25, y: 19.6 };
+  const canvas = $("#court"), ctx = canvas.getContext("2d");
+  let courtCache = null, courtKey = "";
+
+  function sizeCanvas() {
+    const cssW = canvas.clientWidth || 500;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const pw = Math.round(cssW * dpr), ph = Math.round(cssW * 47 / 50 * dpr);
+    if (canvas.width !== pw || canvas.height !== ph) { canvas.width = pw; canvas.height = ph; }
+    return pw / 50;
+  }
+
+  function buildCourt(k, paintColor) {
+    const cv = document.createElement("canvas");
+    cv.width = canvas.width; cv.height = canvas.height;
+    const c = cv.getContext("2d");
+    c.setTransform(k, 0, 0, k, 0, 0);
+    c.fillStyle = "#D9A469";
+    c.fillRect(0, 0, 50, 47);
+    let seed = 11;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    for (let x = 0; x < 50; x += 1.25) {
+      for (let y = -rnd() * 10; y < 47;) {
+        const len = 6 + rnd() * 10;
+        c.fillStyle = rnd() < .5 ? `rgba(120,70,30,${(.04 + rnd() * .08).toFixed(3)})` : `rgba(255,232,195,${(.04 + rnd() * .1).toFixed(3)})`;
+        c.fillRect(x, y, 1.25, len);
+        c.fillStyle = "rgba(90,50,20,.2)";
+        c.fillRect(x, y, 1.25, .05);
+        y += len;
+      }
+      c.fillStyle = "rgba(90,50,20,.15)";
+      c.fillRect(x, 0, .04, 47);
+    }
+    c.globalAlpha = .86;
+    c.fillStyle = paintColor;
+    c.fillRect(17, 0, 16, 19);
+    c.globalAlpha = 1;
+
+    c.strokeStyle = "#FBF3E4";
+    c.lineWidth = .22;
+    c.strokeRect(.11, .11, 49.78, 46.78);
+    c.strokeRect(17, 0, 16, 19);
+    c.beginPath(); c.arc(25, 19, 6, 0, Math.PI); c.stroke();
+    c.setLineDash([.9, .7]);
+    c.beginPath(); c.arc(25, 19, 6, Math.PI, Math.PI * 2); c.stroke();
+    c.setLineDash([]);
+    c.beginPath(); c.arc(RIM.x, RIM.y, 4, 0, Math.PI); c.stroke();
+    const cornerY = RIM.y + Math.sqrt(23.75 ** 2 - 22 ** 2);
+    const a = Math.atan2(cornerY - RIM.y, 22);
+    c.beginPath();
+    c.moveTo(3, 0); c.lineTo(3, cornerY);
+    c.arc(RIM.x, RIM.y, 23.75, Math.PI - a, a, true);
+    c.lineTo(47, 0);
+    c.stroke();
+    c.beginPath(); c.arc(25, 47, 6, Math.PI, 0); c.stroke();
+    c.beginPath(); c.arc(25, 47, 2, Math.PI, 0); c.stroke();
+    for (const y of [7, 11, 14]) {
+      c.beginPath(); c.moveTo(16.3, y); c.lineTo(17, y); c.moveTo(33, y); c.lineTo(33.7, y); c.stroke();
+    }
+    c.strokeStyle = "#F4F6F8"; c.lineWidth = .4;
+    c.beginPath(); c.moveTo(22, 4); c.lineTo(28, 4); c.stroke();
+    c.strokeStyle = "#BFC5CC"; c.lineWidth = .18;
+    c.beginPath(); c.moveTo(25, 4.2); c.lineTo(25, 4.5); c.stroke();
+    c.strokeStyle = "#E2571A"; c.lineWidth = .24;
+    c.beginPath(); c.arc(RIM.x, RIM.y, .75, 0, Math.PI * 2); c.stroke();
+    const g = c.createRadialGradient(25, 23, 10, 25, 23, 40);
+    g.addColorStop(0, "rgba(0,0,0,0)");
+    g.addColorStop(1, "rgba(40,20,5,.22)");
+    c.fillStyle = g;
+    c.fillRect(0, 0, 50, 47);
+    return cv;
+  }
+
+  /* ---------- Possession animation ---------- */
+  // Roles: H = ball handler, S = shooter (H, or the teammate after a pass). Defender slot i guards offense slot i.
+  function planPossession(g, p) {
+    const o = p.off, d = 1 - o;
+    const H = p.handler, S = p.shooter;
+    const side = Math.random() < .5 ? -1 : 1;
+    const wing = { x: 25 + side * 17, y: 16 };
+    let dist;
+    if (p.kind === "turnover") dist = rand(14, 22);
+    else dist = p.shot === "three" ? rand(24, 25.5) : p.shot === "mid" ? rand(10, 17) : rand(2.6, 3.8);
+    const ang = p.passed ? side * rand(.5, 1.2) : rand(-1.2, 1.2);
+    const spot = { x: clamp(RIM.x + Math.sin(ang) * dist, 2.5, 47.5), y: clamp(RIM.y + Math.cos(ang) * dist, 2.5, 44) };
+    const dx = RIM.x - spot.x, dy = RIM.y - spot.y, len = Math.hypot(dx, dy) || 1;
+    const toRim = { x: dx / len, y: dy / len };
+    const perp = { x: -toRim.y, y: toRim.x };
+    const along = (P, f, s = 0) => ({ x: P.x + toRim.x * f + perp.x * s, y: P.y + toRim.y * f + perp.y * s });
+    const contested = p.contested || p.kind === "block";
+    let guardEnd;
+    if (p.kind === "turnover") guardEnd = along(spot, 1.8);
+    else if (p.shot === "rim") guardEnd = contested ? along(lerpP(spot, RIM, .4), 0, 1.8) : along(spot, -2.5, 1.5);
+    else guardEnd = contested ? along(spot, 2.6) : along(spot, 6.5, 2.5);
+    const passPt = { x: 25 + side * 4, y: 24 };
+    const passLen = Math.hypot(RIM.x - passPt.x, RIM.y - passPt.y);
+    return {
+      p, o, d, H, S, T: g.n > 1 ? 1 - H : null,
+      wing, spot, dist: len, guardEnd, passPt, contested,
+      passGuard: { x: passPt.x + (RIM.x - passPt.x) / passLen * 2.4, y: passPt.y + (RIM.y - passPt.y) / passLen * 2.4 },
+      finish: { x: RIM.x - toRim.x * 1.6, y: RIM.y - toRim.y * 1.6 + .6 },
+      reb: { x: clamp(RIM.x + rand(-9, 9), 4, 46), y: RIM.y + rand(4, 11) },
+      deflect: { x: clamp(RIM.x + rand(-11, 11), 3, 47), y: rand(11, 18) },
+      stealRun: { x: clamp(spot.x + rand(-3, 3), 4, 46), y: clamp(spot.y + 5, 10, 42) },
+      wiggle: rand(1.4, 3) * (Math.random() < .5 ? -1 : 1),
+      start: g.pos.map((team) => team.map((P) => ({ ...P }))),
+      startBall: { ...g.ball },
+      called: false,
+      resolved: false,
+      ftDone: 0,
+      cache: {},
+    };
+  }
+
+  const hand = (P, t) => ({ x: P.x + .95, y: P.y + .35, h: .25 + 1.1 * Math.abs(Math.sin(t * 8)) });
+  const holding = (P) => ({ x: P.x + .95, y: P.y + .35, h: 1.3 });
+  const copyPose = (pose) => ({
+    P: pose.P.map((team) => team.map((pt) => ({ ...pt }))),
+    J: [[0, 0], [0, 0]],
+    B: { ...pose.B },
+  });
+
+  function poseAt(pl, t) {
+    const p = pl.p, { o, d, H, S, T } = pl;
+    const tDrive = p.reset, tShot = tDrive + p.drive, tAfter = tShot + p.flight, tFT = tAfter + p.after;
+    if (t < tDrive) {
+      const k = ease(t / p.reset);
+      const P = [[], []];
+      const target = (team, slot) => {
+        if (team === o) return slot === H ? CHECK : pl.wing;
+        return slot === H ? GUARD : lerpP(pl.wing, RIM, .25);
+      };
+      pl.start.forEach((team, ti) => team.forEach((pt, si) => { P[ti][si] = lerpP(pt, target(ti, si), k); }));
+      const hb = hand(P[o][H], t), sb = pl.startBall;
+      return { P, J: [[0, 0], [0, 0]], B: { x: lerp(sb.x, hb.x, k), y: lerp(sb.y, hb.y, k), h: lerp(sb.h, hb.h, k) } };
+    }
+    if (t < tShot) {
+      const k = (t - tDrive) / p.drive;
+      const P = [[], []];
+      const helpStart = lerpP(pl.wing, RIM, .25);
+      let B;
+      if (!p.passed) {
+        const e = ease(k);
+        const hp = lerpP(CHECK, pl.spot, e);
+        hp.x += Math.sin(Math.PI * e) * pl.wiggle;
+        P[o][H] = hp;
+        P[d][H] = lerpP(GUARD, pl.guardEnd, ease(Math.min(1, k * 1.15)));
+        if (T !== null) {
+          P[o][T] = lerpP(pl.wing, { x: pl.wing.x, y: pl.wing.y - 2.5 }, ease(k));
+          P[d][T] = lerpP(helpStart, lerpP(pl.wing, RIM, .4), ease(k));
+        }
+        B = hand(hp, t);
+      } else {
+        const passK = .5, kp = Math.min(1, k / passK);
+        P[o][H] = lerpP(CHECK, pl.passPt, ease(kp));
+        P[d][H] = lerpP(GUARD, pl.passGuard, ease(kp));
+        P[o][S] = lerpP(pl.wing, pl.spot, ease(k));
+        P[d][S] = lerpP(helpStart, pl.guardEnd, ease(clamp((k - .3) / .6, 0, 1)));
+        if (k < passK) B = hand(P[o][H], t);
+        else if (k < passK + .22) {
+          const kk = (k - passK) / .22, from = holding(P[o][H]), to = holding(P[o][S]);
+          B = { x: lerp(from.x, to.x, kk), y: lerp(from.y, to.y, kk), h: 1.3 + Math.sin(Math.PI * kk) * .6 };
+        } else B = holding(P[o][S]);
+      }
+      return { P, J: [[0, 0], [0, 0]], B };
+    }
+    if (t < tAfter) {
+      const base = pl.cache.driveEnd || (pl.cache.driveEnd = poseAt(pl, tShot - 1e-4));
+      const pose = copyPose(base), P = pose.P, J = pose.J;
+      const k = (t - tShot) / p.flight;
+      if (p.shot === "rim") {
+        P[o][S] = lerpP(pl.spot, pl.finish, ease(k));
+        J[o][S] = Math.sin(Math.PI * k);
+        P[d][S] = lerpP(base.P[d][S], lerpP(base.P[d][S], pl.finish, .5), ease(k));
+        J[d][S] = (pl.contested ? 1 : .3) * Math.sin(Math.PI * Math.min(1, k * 1.2));
+      } else {
+        P[o][S] = { ...pl.spot };
+        J[o][S] = Math.sin(Math.PI * Math.min(1, k * 1.6));
+        J[d][S] = pl.contested ? .75 * Math.sin(Math.PI * Math.min(1, k * 1.4)) : 0;
+      }
+      const shooter = P[o][S];
+      if (p.kind === "block" && k > .45) {
+        const kk = (k - .45) / .55, M = lerpP(shooter, RIM, .45);
+        pose.B = { x: lerp(M.x, pl.deflect.x, kk), y: lerp(M.y, pl.deflect.y, kk), h: lerp(3, .4, kk) + Math.sin(Math.PI * kk) * 1.2 };
+      } else if (p.shot === "rim") {
+        const kb = p.kind === "block" ? k : k * k;
+        pose.B = { x: lerp(shooter.x + .6, RIM.x, kb), y: lerp(shooter.y, RIM.y, kb), h: 2 + 1.1 * k };
+      } else {
+        pose.B = { x: lerp(pl.spot.x, RIM.x, k), y: lerp(pl.spot.y, RIM.y, k), h: lerp(2.4, 3.05, k) + Math.sin(Math.PI * k) * (2 + pl.dist * .22) };
+      }
+      return pose;
+    }
+    if (t < tFT || !p.ftTime) {
+      // After the shot (or the steal): finish the play.
+      const s = pl.cache.flightEnd || (pl.cache.flightEnd = poseAt(pl, tAfter - 1e-4));
+      const pose = copyPose(s), P = pose.P;
+      const k = Math.min(1, (t - tAfter) / p.after);
+      const drift = (team, slot, target, amount) => { P[team][slot] = lerpP(s.P[team][slot], lerpP(s.P[team][slot], target, amount), ease(k)); };
+      if (p.kind === "turnover") {
+        const st = p.stealer;
+        P[d][st] = lerpP(s.P[d][st], pl.stealRun, ease(k));
+        drift(o, H, { x: s.P[o][H].x, y: s.P[o][H].y + 4 }, .4);
+        if (k < .3) {
+          const hb = hand(P[d][st], t), kk = k / .3;
+          pose.B = { x: lerp(s.B.x, hb.x, kk), y: lerp(s.B.y, hb.y, kk), h: lerp(s.B.h, hb.h, kk) };
+        } else pose.B = hand(P[d][st], t);
+      } else if (p.made) {
+        pose.B = { x: RIM.x, y: lerp(RIM.y, RIM.y + 1.2, k), h: Math.max(.25, 3.05 * Math.pow(1 - k, 2) + Math.abs(Math.sin(k * 9)) * .6 * (1 - k)) };
+        drift(o, S, { x: s.P[o][S].x, y: s.P[o][S].y + 3 }, .55);
+      } else if (p.fouled) {
+        pose.B = { x: lerp(RIM.x, RIM.x + 1.5, k), y: lerp(RIM.y, RIM.y + 2.5, k), h: Math.max(.25, 3 * (1 - k) + Math.abs(Math.sin(k * 9)) * .4 * (1 - k)) };
+      } else if (p.kind === "block") {
+        const target = { x: pl.deflect.x - .95, y: pl.deflect.y - .35 };
+        P[d][S] = lerpP(s.P[d][S], target, ease(Math.min(1, k / .7)));
+        drift(o, S, target, .35);
+        pose.B = k < .7 ? { x: pl.deflect.x, y: pl.deflect.y, h: Math.abs(Math.sin(k * 10)) * .7 * (1 - k) + .2 } : hand(P[d][S], t);
+      } else {
+        const rTeam = p.oreb ? o : d, rSlot = p.rebounder;
+        const target = { x: pl.reb.x - .95, y: pl.reb.y - .35 };
+        const kr = ease(Math.min(1, k / .6));
+        s.P.forEach((team, ti) => team.forEach((pt, si) => {
+          if (ti === rTeam && si === rSlot) P[ti][si] = lerpP(pt, target, kr);
+          else P[ti][si] = lerpP(pt, lerpP(pt, target, .35), kr);
+        }));
+        if (k < .55) {
+          const kk = k / .55;
+          pose.B = { x: lerp(RIM.x, pl.reb.x, kk), y: lerp(RIM.y, pl.reb.y, kk), h: lerp(3, 1, kk) + Math.sin(Math.PI * kk) * 1.6 };
+        } else pose.B = hand(P[rTeam][rSlot], t);
+      }
+      return pose;
+    }
+    // Free throws: everyone lines up, the shooter takes them from the line.
+    const s = pl.cache.afterEnd || (pl.cache.afterEnd = poseAt(pl, tFT - 1e-4));
+    const pose = copyPose(s), P = pose.P;
+    const lane = [[{ x: 31.5, y: 15 }, { x: 18.5, y: 15 }], [{ x: 31.5, y: 10 }, { x: 18.5, y: 10 }]];
+    const walk = ease(Math.min(1, (t - tFT) / FT_WALK));
+    s.P.forEach((team, ti) => team.forEach((pt, si) => {
+      const target = ti === o && si === S ? FT_SPOT : lane[ti === o ? 0 : 1][ti === o ? 0 : si === S ? 0 : 1];
+      P[ti][si] = lerpP(pt, target, walk);
+    }));
+    const tt = t - tFT - FT_WALK;
+    if (tt < 0) { pose.B = { x: lerp(s.B.x, FT_SPOT.x + .95, walk), y: lerp(s.B.y, FT_SPOT.y + .35, walk), h: lerp(s.B.h, 1.3, walk) }; return pose; }
+    const i = Math.min(p.fts.length - 1, Math.floor(tt / FT_TIME));
+    const kk = Math.min(1, (tt - i * FT_TIME) / FT_TIME);
+    const from = holding(FT_SPOT);
+    if (kk < .55) {
+      const kf = kk / .55;
+      pose.B = { x: lerp(from.x, RIM.x, kf), y: lerp(from.y, RIM.y, kf), h: lerp(1.6, 3.05, kf) + Math.sin(Math.PI * kf) * 4.5 };
+    } else {
+      const kr = (kk - .55) / .45;
+      pose.B = p.fts[i]
+        ? { x: RIM.x, y: lerp(RIM.y, RIM.y + 1.2, kr), h: Math.max(.25, 3.05 * (1 - kr) * (1 - kr)) }
+        : { x: lerp(RIM.x, RIM.x + 3, kr), y: lerp(RIM.y, RIM.y + 3.5, kr), h: Math.max(.25, 3 * (1 - kr) + Math.sin(Math.PI * kr) * 1.2) };
+    }
+    return pose;
+  }
+
+  function currentPose(g) {
+    if (g.pl) return poseAt(g.pl, Math.min(g.local, g.pl.p.dur));
+    return { P: g.pos, J: [[0, 0], [0, 0]], B: g.ball };
+  }
+
+  function drawText(text, x, y, sizeFt, k, color, stroke) {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.font = `800 ${sizeFt * k}px "Saira Extra Condensed", "Arial Narrow", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if (stroke) { ctx.lineWidth = sizeFt * k * .14; ctx.strokeStyle = stroke; ctx.lineJoin = "round"; ctx.strokeText(text, x * k, y * k); }
+    ctx.fillStyle = color;
+    ctx.fillText(text, x * k, y * k);
+    ctx.restore();
+  }
+
+  // A player: their own color and photo inside, a ring in the color of the side they play for.
+  function drawToken(player, teamColor, P, jump, k) {
+    const r = 1.6 * (1 + jump * .12);
+    const y = P.y - jump * .6;
+    ctx.fillStyle = "rgba(45,22,6,.3)";
+    ctx.beginPath(); ctx.ellipse(P.x, P.y + .55, 1.9 - jump * .3, 1.05 - jump * .2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(P.x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = player.color; ctx.fill();
+    const im = logoImage(player);
+    if (im) { ctx.clip(); ctx.drawImage(im, P.x - r, y - r, r * 2, r * 2); }
+    ctx.restore();
+    ctx.lineWidth = .2; ctx.strokeStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.arc(P.x, y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = .36; ctx.strokeStyle = teamColor;
+    ctx.beginPath(); ctx.arc(P.x, y, r + .28, 0, Math.PI * 2); ctx.stroke();
+    if (!im) drawText(initials(player.name), P.x, y + .08, 1.45 * (1 + jump * .12), k, "#FFFFFF", "rgba(0,0,0,.35)");
+  }
+
+  function drawBall(B) {
+    const h = Math.max(0, B.h);
+    ctx.fillStyle = `rgba(45,22,6,${(.32 - Math.min(h, 6) * .03).toFixed(3)})`;
+    ctx.beginPath(); ctx.ellipse(B.x, B.y + .15, .6, .38, 0, 0, Math.PI * 2); ctx.fill();
+    const y = B.y - h * .55, r = .62 * (1 + h * .07);
+    ctx.fillStyle = "#E8731E";
+    ctx.beginPath(); ctx.arc(B.x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(40,15,0,.75)"; ctx.lineWidth = .07;
+    ctx.beginPath(); ctx.arc(B.x, y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(B.x - r, y); ctx.lineTo(B.x + r, y); ctx.moveTo(B.x, y - r); ctx.lineTo(B.x, y + r); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.28)";
+    ctx.beginPath(); ctx.arc(B.x - r * .35, y - r * .35, r * .3, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function draw(g) {
+    const k = sizeCanvas();
+    const key = `${canvas.width}x${canvas.height}|${g.teams[0].choice.color}`;
+    if (!courtCache || courtKey !== key) { courtCache = buildCourt(k, g.teams[0].choice.color); courtKey = key; }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(courtCache, 0, 0);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+
+    const pose = currentPose(g);
+    const bodies = [];
+    pose.P.forEach((team, ti) => team.forEach((pt, si) => bodies.push({ ti, si, pt })));
+    bodies.sort((a, b) => a.pt.y - b.pt.y);
+    for (const b of bodies) {
+      drawToken(g.teams[b.ti].players[b.si], g.teams[b.ti].choice.color, b.pt, pose.J[b.ti][b.si] || 0, k);
+    }
+
+    g.fx = g.fx.filter((f) => g.time - f.t0 < f.dur);
+    for (const f of g.fx) {
+      if (f.type !== "flash") continue;
+      const age = (g.time - f.t0) / f.dur;
+      ctx.globalAlpha = 1 - age;
+      ctx.strokeStyle = f.color; ctx.lineWidth = .5;
+      ctx.beginPath(); ctx.arc(RIM.x, RIM.y, .9 + age * 3.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    drawBall(pose.B);
+    for (const f of g.fx) {
+      if (f.type !== "pts") continue;
+      const age = (g.time - f.t0) / f.dur;
+      ctx.save();
+      ctx.globalAlpha = age < .7 ? 1 : 1 - (age - .7) / .3;
+      drawText(f.text, RIM.x + 4.5, RIM.y + 4 - age * 2.5, 3.4, k, "#FFFFFF", f.color);
+      ctx.restore();
+    }
+
+    if (g.pause) {
+      ctx.fillStyle = "rgba(11,15,22,.86)";
+      ctx.fillRect(0, 17.5, 50, 12);
+      drawText(g.pause.title, 25, 22, 5, k, "#FFB327");
+      drawText(g.pause.sub, 25, 26.6, 2.4, k, "#E9EEF5");
+    }
+  }
+
+  /* ---------- Commentary ---------- */
+  // {o} shooter, {h} passer, {d} the shooter's defender, {s} who stole it, {r} rebounder.
+  const LINES = {
+    open: {
+      three: ["{o} is wide open from deep…", "{o} gets a clean look from three…"],
+      mid: ["{o} has room at the elbow…", "{o} pulls up, nobody close…"],
+      rim: ["{o} gets a clear lane to the rim!", "{o} blows right past {d}!"],
+    },
+    contested: {
+      three: ["{o} fires over {d}'s hand…", "{o} steps back, {d} right there…"],
+      mid: ["{o} rises over {d}…", "{o} with the tough fadeaway on {d}…"],
+      rim: ["{o} attacks {d} at the rim!", "{o} drives right into {d}!"],
+    },
+    pass: {
+      open: ["{h} finds {o} wide open…", "{h} kicks it out to {o}…"],
+      contested: ["{h} swings it to {o}, {d} closing out…", "{h} hits {o}, {d} flies out…"],
+    },
+    make: {
+      three: ["SPLASH! Three for {o}.", "Bang! {o} from way downtown.", "Wet. {o} buries the three."],
+      mid: ["Money. {o} hits the jumper.", "Nothing but net for {o}.", "{o} drains it."],
+      rim: ["{o} throws it DOWN!", "{o} finishes strong at the rim.", "Up and under. {o} scores."],
+    },
+    makeContested: ["Tough shot, and it goes! {o} over {d}.", "Contested and it STILL drops for {o}!"],
+    andOne: ["AND ONE! {o} scores through the foul by {d}.", "{o} takes the hit from {d} and finishes! Free throw coming."],
+    fouled: ["Foul on {d}! {o} heads to the line for two.", "{d} hacks {o} on the way up. Two free throws."],
+    oreb: ["Off the rim, but {r} grabs the offensive board!", "Rattles out. {r} keeps it alive!"],
+    dreb: ["Off the rim. {r} cleans it up.", "No good. {r} with the rebound.", "Rims out. {r} secures it."],
+    block: ["REJECTED! {d} swats it away!", "{d} says not in here! Blocked!"],
+    steal: ["Stolen! {s} picks {h}'s pocket.", "{h} loses the handle. {s} takes it.", "Turnover! {s} rips it away from {h}."],
+    intercept: ["Picked off! {s} jumps the passing lane.", "{h} tries to pass, {s} reads it and steals it!"],
+  };
+  function fillLine(s, g, pl) {
+    const p = pl.p, name = (team, slot) => g.teams[team].players[slot].name;
+    return s.replaceAll("{o}", name(pl.o, pl.S)).replaceAll("{h}", name(pl.o, pl.H))
+      .replaceAll("{d}", name(pl.d, pl.S))
+      .replaceAll("{s}", p.stealer != null ? name(pl.d, p.stealer) : "")
+      .replaceAll("{r}", p.rebounder != null ? name(p.oreb ? pl.o : pl.d, p.rebounder) : "");
+  }
+
+  function periodLabel(m) {
+    if (m.ot) return "SUDDEN DEATH";
+    return m.nq === 1 ? "QUICK" : `Q${m.q}`;
+  }
+  function clockText(g) {
+    const m = g.m;
+    if (m.ot) return "0:00";
+    const elapsed = m.t + (g.pl ? Math.min(g.local, g.pl.p.dur) : 0);
+    const left = Math.max(0, m.qLen - elapsed);
+    const gameSec = Math.ceil(left / m.qLen * 720);
+    return `${Math.floor(gameSec / 60)}:${String(gameSec % 60).padStart(2, "0")}`;
+  }
+
+  function renderFeed(g) {
+    const ol = $("#feed");
+    ol.innerHTML = "";
+    for (const item of g.feed) {
+      const li = document.createElement("li");
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      if (item.color) dot.style.setProperty("--tc", item.color);
+      const tx = document.createElement("span");
+      tx.textContent = item.text;
+      const st = document.createElement("span");
+      st.className = "ftime";
+      st.textContent = item.stamp;
+      li.append(dot, tx, st);
+      ol.append(li);
+    }
+  }
+  function feedPush(g, text, teamIndex) {
+    const game = g.series.bestOf > 1 ? `G${g.series.games.length + 1} ` : "";
+    g.feed.unshift({ text, color: teamIndex == null ? null : g.teams[teamIndex].choice.color, stamp: g.m.ot ? `${game}SD` : `${game}${periodLabel(g.m)} ${clockText(g)}` });
+    g.feed.length = Math.min(g.feed.length, 7);
+    renderFeed(g);
+  }
+
+  function callLine(g, pl) {
+    const p = pl.p;
+    if (p.kind === "turnover") return;
+    const tone = pl.contested ? "contested" : "open";
+    const line = p.passed ? pick(LINES.pass[tone]) : pick(LINES[tone][p.shot]);
+    feedPush(g, fillLine(line, g, pl), pl.o);
+  }
+  function scoreFx(g, team, pts) {
+    const color = g.teams[team].choice.color;
+    g.fx.push({ type: "flash", color, t0: g.time, dur: .6 });
+    g.fx.push({ type: "pts", text: `+${pts}`, color, t0: g.time, dur: 1.1 });
+  }
+  function resolveLine(g, pl) {
+    const p = pl.p;
+    if (p.kind === "turnover") return feedPush(g, fillLine(pick(p.intercepted ? LINES.intercept : LINES.steal), g, pl), pl.d);
+    if (p.kind === "block") return feedPush(g, fillLine(pick(LINES.block), g, pl), pl.d);
+    if (p.made) {
+      g.disp[pl.o] += p.pts;
+      scoreFx(g, pl.o, p.pts);
+      let line = fillLine(pick(p.fouled ? LINES.andOne : pl.contested ? LINES.makeContested : LINES.make[p.shot]), g, pl);
+      if (p.passed) line += ` Assist: ${g.teams[pl.o].players[pl.H].name}.`;
+      return feedPush(g, line, pl.o);
+    }
+    if (p.fouled) return feedPush(g, fillLine(pick(LINES.fouled), g, pl), pl.o);
+    feedPush(g, fillLine(pick(p.oreb ? LINES.oreb : LINES.dreb), g, pl), p.oreb ? pl.o : pl.d);
+  }
+  function freeThrowLine(g, pl, i) {
+    const p = pl.p, good = p.fts[i], shooter = g.teams[pl.o].players[pl.S].name;
+    const which = p.fts.length > 1 ? `${i === 0 ? "First" : "Second"} free throw` : "The free throw";
+    if (good) { g.disp[pl.o] += 1; scoreFx(g, pl.o, 1); }
+    feedPush(g, `${which}… ${good ? "good" : "no good"} for ${shooter}.`, pl.o);
+  }
+
+  /* ---------- Game loop ---------- */
+  let game = null;
+  const boardEls = [$("#b-home"), $("#b-away")];
+
+  function updateBoard(g) {
+    const holder = g.pl ? g.pl.o : g.m.ball;
+    boardEls.forEach((el, i) => {
+      el.querySelector(".bscore").textContent = g.disp[i];
+      el.classList.toggle("has-ball", !g.m.done && holder === i);
+    });
+    const s = g.series;
+    $("#b-series").textContent = s.bestOf > 1 ? `GAME ${Math.min(s.games.length + 1, 3)} · ${s.wins[0]}–${s.wins[1]}` : "";
+    $("#b-period").textContent = periodLabel(g.m);
+    $("#b-clock").textContent = g.m.ot ? "NEXT BUCKET" : clockText(g);
+    $("#b-clock").style.fontSize = g.m.ot ? "18px" : "";
+  }
+
+  const seriesNeed = (s) => Math.ceil(s.bestOf / 2);
+  function seriesOver(s) { return s.wins[0] >= seriesNeed(s) || s.wins[1] >= seriesNeed(s); }
+
+  function handleEvent(g) {
+    const m = g.m, [h, a] = g.teams.map((t) => t.choice);
+    g.disp = [...m.score];
+    if (m.lastEvent === "endq") {
+      const n = m.q - 1;
+      feedPush(g, `End of Q${n}. ${h.name} ${m.score[0]}, ${a.name} ${m.score[1]}.`, null);
+      g.pause = { left: 1.8, title: `END OF Q${n}`, sub: `${m.score[0]} – ${m.score[1]}` };
+    } else if (m.lastEvent === "ot") {
+      feedPush(g, "Tied at the buzzer! Sudden death: next score wins.", null);
+      g.pause = { left: 2, title: "TIED UP", sub: "Next score wins" };
+    } else if (m.lastEvent === "final") {
+      const w = m.winner, s = g.series;
+      s.wins[w]++;
+      s.games.push(m);
+      if (seriesOver(s) || s.bestOf === 1) {
+        feedPush(g, `${g.teams[w].choice.name} wins it, ${m.score[w]}–${m.score[1 - w]}.`, w);
+        g.pause = { left: 1.4, title: s.bestOf > 1 ? "SERIES OVER" : "FINAL", sub: s.bestOf > 1 ? `${s.wins[0]} – ${s.wins[1]}` : `${m.score[0]} – ${m.score[1]}` };
+      } else {
+        const lead = s.wins[0] === s.wins[1] ? `Series tied ${s.wins[0]}–${s.wins[1]}` : `${g.teams[s.wins[0] > s.wins[1] ? 0 : 1].choice.name} leads ${Math.max(...s.wins)}–${Math.min(...s.wins)}`;
+        feedPush(g, `${g.teams[w].choice.name} takes Game ${s.games.length}, ${m.score[w]}–${m.score[1 - w]}. ${lead}.`, w);
+        g.pause = { left: 2.6, title: `GAME ${s.games.length} FINAL`, sub: lead, nextGame: true };
+      }
+    }
+  }
+
+  function tipOffPositions(n, first) {
+    const pos = [[], []];
+    pos[first][0] = { x: 24, y: 40 };
+    pos[1 - first][0] = { x: 26, y: 44 };
+    if (n > 1) {
+      pos[first][1] = { x: 15, y: 36 };
+      pos[1 - first][1] = { x: 35, y: 36 };
+    }
+    return pos;
+  }
+
+  function startNextGame(g) {
+    const played = g.m ? g.m.quartersPlayed() : 0;
+    g.m = new Match(g.teams.map((t) => t.players.map((p) => p.stats)), g.rules.quarters, g.rules.qtrSec, played);
+    g.pos = tipOffPositions(g.n, g.m.first);
+    g.ball = { x: 25, y: 42, h: 5 };
+    g.disp = [0, 0];
+    g.pl = null;
+    const gameNo = g.series.games.length + 1;
+    const jumper = g.teams[g.m.first].players[0].name;
+    const prefix = g.series.bestOf > 1 ? `Game ${gameNo} tip-off! ` : "Tip-off! ";
+    feedPush(g, `${prefix}${jumper} wins the jump ball for ${g.teams[g.m.first].choice.name}.`, g.m.first);
+  }
+
+  function frame(now) {
+    const g = game;
+    if (!g || g.stopped || g.finished) return;
+    const dt = Math.min(.05, (now - (g.last || now)) / 1000) * g.speed;
+    g.last = now;
+    g.time += dt;
+    if (g.pause) {
+      g.pause.left -= dt;
+      if (g.pause.left <= 0) {
+        const nextGame = g.pause.nextGame;
+        g.pause = null;
+        if (nextGame) startNextGame(g);
+        else if (g.m.done) { finish(g); return; }
+      }
+    } else if (!g.m.done) {
+      if (!g.pl) { g.pl = planPossession(g, g.m.next()); g.local = 0; }
+      g.local += dt;
+      const pl = g.pl, p = pl.p, tShot = p.reset + p.drive, tRes = tShot + p.flight, tFT = tRes + p.after + FT_WALK;
+      if (!pl.called && g.local >= tShot) { pl.called = true; callLine(g, pl); }
+      if (!pl.resolved && g.local >= tRes) { pl.resolved = true; resolveLine(g, pl); }
+      while (pl.ftDone < p.fts.length && g.local >= tFT + pl.ftDone * FT_TIME + FT_TIME * .55) {
+        freeThrowLine(g, pl, pl.ftDone);
+        pl.ftDone++;
+      }
+      if (g.local >= p.dur) {
+        const end = poseAt(pl, p.dur);
+        g.pos = end.P; g.ball = end.B;
+        g.pl = null;
+        g.m.apply(p);
+        handleEvent(g);
+      }
+    }
+    draw(g);
+    updateBoard(g);
+    g.raf = requestAnimationFrame(frame);
+  }
+
+  function startGame() {
+    if (game) { game.stopped = true; cancelAnimationFrame(game.raf); }
+    if (settings.tab === "competition" && !compReady()) return;
+    const teams = buildTeams(), rules = matchRules();
+    game = {
+      m: null, teams, rules, n: teams[0].players.length,
+      series: { bestOf: rules.series, wins: [0, 0], games: [] },
+      pos: null, ball: null, pl: null, local: 0, time: 0, last: 0, speed: settings.speed || 1,
+      disp: [0, 0], fx: [], feed: [], pause: null, finished: false, stopped: false,
+    };
+    teams.forEach((t, i) => {
+      boardEls[i].querySelector(".tok-slot").innerHTML = tokenHTML(t.choice, 40);
+      boardEls[i].querySelector(".bname").textContent = t.choice.name;
+      boardEls[i].querySelector(".bplayers").textContent = settings.tab === "competition" ? t.players.map((p) => p.name).join(" & ") : "";
+    });
+    $("#game-hint").textContent = rules.series === 3
+      ? `First to win 2 games is your answer.`
+      : `Whoever wins is your answer.`;
+    setSeg($("#seg-speed"), game.speed);
+    $("#result").hidden = true;
+    $("#controls").hidden = false;
+    $("#feed").innerHTML = "";
+    $("#screen-setup").hidden = true;
+    $("#screen-game").hidden = false;
+    window.scrollTo(0, 0);
+    startNextGame(game);
+    game.raf = requestAnimationFrame(frame);
+  }
+
+  function finish(g) {
+    if (g.finished) return;
+    g.finished = true;
+    cancelAnimationFrame(g.raf);
+    const s = g.series, choices = g.teams.map((t) => t.choice);
+    const w = s.wins[0] > s.wins[1] ? 0 : 1;
+    const winner = choices[w], loser = choices[1 - w];
+    const key = pairKey(choices[0].id, choices[1].id);
+    const rec = rivalry[key] || {};
+    rec[winner.id] = (rec[winner.id] || 0) + 1;
+    rivalry[key] = rec;
+    store.set("jb.rivalry", rivalry);
+
+    const last = s.games[s.games.length - 1];
+    let scoreTable;
+    if (s.bestOf > 1) {
+      scoreTable = `<table class="box"><caption>Series</caption>
+        <thead><tr><th>Team</th>${s.games.map((_, i) => `<th>G${i + 1}</th>`).join("")}<th>Wins</th></tr></thead>
+        <tbody>${[0, 1].map((i) => `<tr><td>${esc(choices[i].name)}</td>${s.games.map((m) => `<td>${m.score[i]}</td>`).join("")}<td class="total">${s.wins[i]}</td></tr>`).join("")}</tbody></table>`;
+    } else {
+      const cols = last.byQ.map((_, i) => (last.ot && i === last.byQ.length - 1 ? "SD" : last.nq === 1 ? "Q1" : `Q${i + 1}`));
+      scoreTable = `<table class="box"><caption>Score</caption>
+        <thead><tr><th>Team</th>${cols.map((c) => `<th>${c}</th>`).join("")}<th>T</th></tr></thead>
+        <tbody>${[0, 1].map((i) => `<tr><td>${esc(choices[i].name)}</td>${last.byQ.map((q) => `<td>${q[i]}</td>`).join("")}<td class="total">${last.score[i]}</td></tr>`).join("")}</tbody></table>`;
+    }
+    const totals = g.teams.map((t, ti) => t.players.map((_, si) => {
+      const sum = { pts: 0, ast: 0, reb: 0, stl: 0, blk: 0 };
+      for (const m of s.games) for (const k of Object.keys(sum)) sum[k] += m.box[ti][si][k];
+      return sum;
+    }));
+    const playerRows = g.teams.map((t, ti) => t.players.map((p, si) => {
+      const b = totals[ti][si];
+      return `<tr><td><span class="tdot" style="--tc:${t.choice.color}"></span>${esc(p.name)}</td><td class="total">${b.pts}</td><td>${b.ast}</td><td>${b.reb}</td><td>${b.stl}</td><td>${b.blk}</td></tr>`;
+    }).join("")).join("");
+    const contestRows = g.teams.map((t, ti) => {
+      const att = s.games.reduce((n, m) => n + m.shots[ti].att, 0);
+      const con = s.games.reduce((n, m) => n + m.shots[ti].contested, 0);
+      return `<li><b>${esc(t.choice.name)}</b>: ${con} of ${att} shots were contested</li>`;
+    }).join("");
+    const summary = s.bestOf > 1
+      ? `${esc(winner.name)} won the series ${s.wins[w]}–${s.wins[1 - w]} over ${esc(loser.name)}.`
+      : `${esc(winner.name)} beat ${esc(loser.name)} ${last.score[w]}–${last.score[1 - w]}.`;
+    const el = $("#result");
+    el.innerHTML = `
+      <div class="eyebrow">${s.bestOf > 1 ? "Series final" : "Final"}${last.ot ? " · sudden death" : ""}</div>
+      <div class="winner">
+        ${tokenHTML(winner, 72)}
+        <div><div class="pick-label">Your answer</div><div class="pick-name">${esc(winner.name)}</div></div>
+      </div>
+      <p class="final-line">${summary} ${rivalryText(choices[0], choices[1])}</p>
+      <div class="box-scroll">${scoreTable}</div>
+      <div class="box-scroll"><table class="box"><caption>${s.bestOf > 1 ? "Player totals" : "Players"}</caption>
+        <thead><tr><th>Player</th><th>PTS</th><th>AST</th><th>REB</th><th>STL</th><th>BLK</th></tr></thead>
+        <tbody>${playerRows}</tbody>
+      </table></div>
+      <ul class="contest-list">${contestRows}</ul>
+      <div class="btns">
+        <button type="button" class="primary" id="again-btn">Play again</button>
+        <button type="button" class="ghost" id="new-btn">Change matchup</button>
+      </div>`;
+    el.hidden = false;
+    $("#controls").hidden = true;
+    $("#again-btn").addEventListener("click", startGame);
+    $("#new-btn").addEventListener("click", backToSetup);
+    updateBoard(g);
+    draw(g);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
+  }
+
+  function skipToEnd() {
+    const g = game;
+    if (!g || g.finished) return;
+    const s = g.series;
+    const teamStats = g.teams.map((t) => t.players.map((p) => p.stats));
+    if (!g.m.done) {
+      if (g.pl) { g.m.apply(g.pl.p); g.pl = null; }
+      while (!g.m.done) g.m.apply(g.m.next());
+    }
+    if (!s.games.includes(g.m)) { s.wins[g.m.winner]++; s.games.push(g.m); }
+    while (!seriesOver(s)) {
+      const m = new Match(teamStats, g.rules.quarters, g.rules.qtrSec, g.m.quartersPlayed());
+      while (!m.done) m.apply(m.next());
+      s.wins[m.winner]++;
+      s.games.push(m);
+      g.m = m;
+    }
+    feedPush(g, "Skipped to the result.", null);
+    g.pause = null;
+    g.disp = [...g.m.score];
+    g.pos = tipOffPositions(g.n, 0).map((team) => team.map((pt) => ({ x: pt.x, y: pt.y - 10 })));
+    g.ball = { x: 25, y: 6.4, h: .25 };
+    finish(g);
+  }
+
+  function backToSetup() {
+    if (game) { game.stopped = true; cancelAnimationFrame(game.raf); }
+    $("#screen-game").hidden = true;
+    $("#screen-setup").hidden = false;
+    renderSetup();
+    window.scrollTo(0, 0);
+  }
+
+  bindSeg("#seg-speed", (v) => {
+    settings.speed = Number(v);
+    saveSettings();
+    if (game) game.speed = settings.speed;
+    setSeg($("#seg-speed"), settings.speed);
+  });
+  $("#tipoff").addEventListener("click", startGame);
+  $("#skip-btn").addEventListener("click", skipToEnd);
+  $("#quit-btn").addEventListener("click", backToSetup);
+  window.addEventListener("resize", () => { if (game && game.finished) draw(game); });
+
+  renderSetup();
+})();
+</script>
